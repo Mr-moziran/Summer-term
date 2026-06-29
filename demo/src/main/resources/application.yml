@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ticket_system
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+  ai:
+    deepseek:
+      api-key: ${DS_API_KEY}
+      chat:
+        options:
+          model: deepseek-chat
+
+  config:
+    import: optional:file:../.env.properties
