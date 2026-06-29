@@ -5,7 +5,7 @@ spring:
     password: postgres
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
   ai:
     vectorstore:
@@ -14,9 +14,19 @@ spring:
         dimensions: 1536
         distance-type: COSINE_DISTANCE
         index-type: HNSW
+    model:
+      chat: openai
+      embedding: openai
     openai:
-      api-key: ${OPENAI_API_KEY}
+      api-key: ${DS_API_KEY}
+      chat:
+        base-url: https://api.deepseek.com
+        api-key: ${DS_API_KEY}
+        options:
+          model: deepseek-v4-flash
+          temperature: 0.3
       embedding:
         options:
-          model: text-embedding-3-small
-
+          model: text-embedding-ada-002
+        base-url: https://botcf.com
+        api-key: ${EMBEDDING_API_KEY:}
