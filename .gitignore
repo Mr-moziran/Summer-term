@@ -34,4 +34,5 @@ build/
 .idea/
 *.log
 .codegraph/
+.env.properties
 
