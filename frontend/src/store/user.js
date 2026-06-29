@@ -1,0 +1,65 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { login, register } from '@/api/auth'
+import router from '@/router'
+
+export const useUserStore = defineStore('user', () => {
+  const token = ref(localStorage.getItem('token') || '')
+  const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || 'null'))
+
+  const isLoggedIn = computed(() => !!token.value)
+  const userId = computed(() => userInfo.value?.userId)
+  const username = computed(() => userInfo.value?.username)
+  const role = computed(() => userInfo.value?.role)
+  const isUser = computed(() => role.value === 'USER')
+  const isAgent = computed(() => role.value === 'AGENT')
+  const isAdmin = computed(() => role.value === 'ADMIN')
+
+  async function loginAction(credentials) {
+    const data = await login(credentials)
+    token.value = data.token
+    userInfo.value = {
+      userId: data.userId,
+      username: data.username,
+      role: data.role
+    }
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+
+    // 根据角色跳转
+    if (data.role === 'USER') {
+      router.push('/my-tickets')
+    } else if (data.role === 'AGENT') {
+      router.push('/agent/tickets')
+    } else if (data.role === 'ADMIN') {
+      router.push('/admin/dashboard')
+    }
+  }
+
+  async function registerAction(credentials) {
+    await register(credentials)
+  }
+
+  function logout() {
+    token.value = ''
+    userInfo.value = null
+    localStorage.removeItem('token')
+    localStorage.removeItem('userInfo')
+    router.push('/login')
+  }
+
+  return {
+    token,
+    userInfo,
+    isLoggedIn,
+    userId,
+    username,
+    role,
+    isUser,
+    isAgent,
+    isAdmin,
+    loginAction,
+    registerAction,
+    logout
+  }
+})

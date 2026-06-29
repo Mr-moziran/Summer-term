@@ -1,0 +1,58 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Sans CJK SC';
+}
+
+body {
+  background-color: #f5f7fa;
+}
+
+// 通用布局样式
+.page-container {
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.content-card {
+  background: white;
+  border-radius: 4px;
+  padding: 20px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+// 状态标签颜色
+.status-badge {
+  &.pending { color: #909399; }
+  &.assigned { color: #409EFF; }
+  &.processing { color: #E6A23C; }
+  &.resolved { color: #67C23A; }
+  &.closed { color: #909399; }
+}
+
+// 优先级标签颜色
+.priority-tag {
+  &.low { border-color: #909399; color: #909399; }
+  &.medium { border-color: #409EFF; color: #409EFF; }
+  &.high { border-color: #E6A23C; color: #E6A23C; }
+  &.urgent { border-color: #F56C6C; color: #F56C6C; }
+}
+
+// 通用工具类
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.mt-20 { margin-top: 20px; }
+.mb-20 { margin-bottom: 20px; }
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
