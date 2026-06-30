@@ -1,6 +1,7 @@
 package com.project.demo.controller;
 
 import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -91,6 +92,56 @@ class AdminStatsControllerTests {
 				.andExpect(jsonPath("$.categoryDistribution.TECHNICAL").value(closeTo(0.67, 0.01)))
 				.andExpect(jsonPath("$.categoryDistribution.BILLING").value(closeTo(0.33, 0.01)))
 				.andExpect(jsonPath("$.aiAdoptionRate").value(closeTo(0.5, 0.01)));
+	}
+
+	@Test
+	void adminGetsAgentPerformanceStats() throws Exception {
+		var admin = authSupport.createUser(UserRole.ADMIN);
+		User submitter = saveUser("agent-stats-user", UserRole.USER);
+		User firstAgent = saveUser("agent-stats-a", UserRole.AGENT);
+		User secondAgent = saveUser("agent-stats-b", UserRole.AGENT);
+		OffsetDateTime now = OffsetDateTime.now();
+
+		Ticket firstResolved = ticketRepository.save(new Ticket("First resolved", "Resolved by first agent", submitter));
+		firstResolved.assignTo(firstAgent);
+		firstResolved.changeStatus(TicketStatus.RESOLVED);
+		Ticket savedFirstResolved = ticketRepository.save(firstResolved);
+		setTicketFields(savedFirstResolved, "TECHNICAL", "RESOLVED", now.minusHours(2), firstAgent.getId());
+		Reply firstAdoptedReply = replyRepository.save(new Reply(savedFirstResolved, firstAgent, "AI answer", false, true));
+		setReplyCreatedAt(firstAdoptedReply, now.minusMinutes(90));
+
+		Ticket firstAssigned = ticketRepository.save(new Ticket("First assigned", "Still processing", submitter));
+		firstAssigned.assignTo(firstAgent);
+		Ticket savedFirstAssigned = ticketRepository.save(firstAssigned);
+		setTicketFields(savedFirstAssigned, "BILLING", "ASSIGNED", now.minusHours(1), firstAgent.getId());
+		Reply firstManualReply = replyRepository.save(new Reply(savedFirstAssigned, firstAgent, "Manual answer", false, false));
+		setReplyCreatedAt(firstManualReply, now.minusMinutes(45));
+
+		Ticket secondResolved = ticketRepository.save(new Ticket("Second resolved", "Resolved by second agent", submitter));
+		secondResolved.assignTo(secondAgent);
+		secondResolved.changeStatus(TicketStatus.RESOLVED);
+		Ticket savedSecondResolved = ticketRepository.save(secondResolved);
+		setTicketFields(savedSecondResolved, "COMPLAINT", "RESOLVED", now.minusHours(3), secondAgent.getId());
+		Reply secondReply = replyRepository.save(new Reply(savedSecondResolved, secondAgent, "Second answer", false, false));
+		setReplyCreatedAt(secondReply, now.minusHours(2));
+
+		mockMvc.perform(get("/api/admin/stats/agents")
+				.header(HttpHeaders.AUTHORIZATION, admin.bearerToken()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(2)))
+				.andExpect(jsonPath("$[0].agentId").value(firstAgent.getId()))
+				.andExpect(jsonPath("$[0].username").value(firstAgent.getUsername()))
+				.andExpect(jsonPath("$[0].assignedCount").value(2))
+				.andExpect(jsonPath("$[0].resolvedCount").value(1))
+				.andExpect(jsonPath("$[0].replyCount").value(2))
+				.andExpect(jsonPath("$[0].aiAdoptionRate").value(closeTo(0.5, 0.01)))
+				.andExpect(jsonPath("$[0].avgResponseMinutes").value(closeTo(22.5, 0.1)))
+				.andExpect(jsonPath("$[1].agentId").value(secondAgent.getId()))
+				.andExpect(jsonPath("$[1].assignedCount").value(1))
+				.andExpect(jsonPath("$[1].resolvedCount").value(1))
+				.andExpect(jsonPath("$[1].replyCount").value(1))
+				.andExpect(jsonPath("$[1].aiAdoptionRate").value(closeTo(0.0, 0.01)))
+				.andExpect(jsonPath("$[1].avgResponseMinutes").value(closeTo(60.0, 0.1)));
 	}
 
 	@Test

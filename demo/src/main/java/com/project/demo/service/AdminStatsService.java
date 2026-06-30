@@ -1,8 +1,10 @@
 package com.project.demo.service;
 
 import com.project.demo.dto.AdminStatsResponse;
+import com.project.demo.dto.AgentPerformanceResponse;
 import com.project.demo.entity.TicketCategory;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -31,6 +33,64 @@ public class AdminStatsService {
 				roundTwoDecimals(avgResponseMinutes),
 				categoryDistribution,
 				roundTwoDecimals(aiAdoptionRate));
+	}
+
+	@Transactional(readOnly = true)
+	public List<AgentPerformanceResponse> listAgentPerformance() {
+		return jdbcTemplate.query("""
+				WITH ticket_stats AS (
+					SELECT
+						assignee_id AS agent_id,
+						COUNT(*) AS assigned_count,
+						COUNT(*) FILTER (WHERE status IN ('RESOLVED', 'CLOSED')) AS resolved_count
+					FROM ticket
+					WHERE assignee_id IS NOT NULL
+					GROUP BY assignee_id
+				), reply_stats AS (
+					SELECT
+						author_id AS agent_id,
+						COUNT(*) AS reply_count,
+						CASE WHEN COUNT(*) = 0 THEN 0
+							ELSE SUM(CASE WHEN ai_adopted THEN 1 ELSE 0 END)::double precision / COUNT(*)
+						END AS ai_adoption_rate
+					FROM reply
+					GROUP BY author_id
+				), first_reply AS (
+					SELECT ticket_id, MIN(created_at) AS created_at
+					FROM reply
+					GROUP BY ticket_id
+				), response_stats AS (
+					SELECT
+						t.assignee_id AS agent_id,
+						AVG(EXTRACT(EPOCH FROM (fr.created_at - t.created_at)) / 60.0) AS avg_response_minutes
+					FROM ticket t
+					JOIN first_reply fr ON fr.ticket_id = t.id
+					WHERE t.assignee_id IS NOT NULL
+					GROUP BY t.assignee_id
+				)
+				SELECT
+					u.id AS agent_id,
+					u.username AS username,
+					COALESCE(ts.assigned_count, 0) AS assigned_count,
+					COALESCE(ts.resolved_count, 0) AS resolved_count,
+					COALESCE(rs.reply_count, 0) AS reply_count,
+					COALESCE(rs.ai_adoption_rate, 0) AS ai_adoption_rate,
+					COALESCE(res.avg_response_minutes, 0) AS avg_response_minutes
+				FROM users u
+				LEFT JOIN ticket_stats ts ON ts.agent_id = u.id
+				LEFT JOIN reply_stats rs ON rs.agent_id = u.id
+				LEFT JOIN response_stats res ON res.agent_id = u.id
+				WHERE u.role = 'AGENT'
+					AND (COALESCE(ts.assigned_count, 0) > 0 OR COALESCE(rs.reply_count, 0) > 0)
+				ORDER BY COALESCE(ts.resolved_count, 0) DESC, COALESCE(ts.assigned_count, 0) DESC, u.id ASC
+				""", (resultSet, rowNum) -> new AgentPerformanceResponse(
+				resultSet.getLong("agent_id"),
+				resultSet.getString("username"),
+				resultSet.getLong("assigned_count"),
+				resultSet.getLong("resolved_count"),
+				resultSet.getLong("reply_count"),
+				roundTwoDecimals(resultSet.getDouble("ai_adoption_rate")),
+				roundTwoDecimals(resultSet.getDouble("avg_response_minutes"))));
 	}
 
 	private long countTodayTickets() {
@@ -71,8 +131,8 @@ public class AdminStatsService {
 				WHERE category IS NOT NULL
 				GROUP BY category
 				""", (RowCallbackHandler) resultSet -> counts.put(
-						resultSet.getString("category"),
-						resultSet.getLong("total")));
+				resultSet.getString("category"),
+				resultSet.getLong("total")));
 
 		long total = counts.values().stream().mapToLong(Long::longValue).sum();
 		Map<String, Double> distribution = new LinkedHashMap<>();
