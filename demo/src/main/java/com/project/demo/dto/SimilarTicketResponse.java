@@ -1,0 +1,32 @@
+package com.project.demo.dto;
+
+public class SimilarTicketResponse {
+
+	private final Long ticketId;
+	private final String title;
+	private final String solution;
+	private final double score;
+
+	public SimilarTicketResponse(Long ticketId, String title, String solution, double score) {
+		this.ticketId = ticketId;
+		this.title = title;
+		this.solution = solution;
+		this.score = score;
+	}
+
+	public Long getTicketId() {
+		return ticketId;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public String getSolution() {
+		return solution;
+	}
+
+	public double getScore() {
+		return score;
+	}
+}
