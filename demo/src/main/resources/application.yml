@@ -36,6 +36,8 @@ app:
     provider: local
     similarity:
       provider: none
+    index:
+      provider: none
   jwt:
     secret: ${JWT_SECRET:dev-only-change-this-secret-at-least-32-bytes}
     expiration-minutes: 120

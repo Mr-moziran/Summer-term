@@ -12,6 +12,7 @@ import com.project.demo.repository.NotificationRepository;
 import com.project.demo.repository.ReplyRepository;
 import com.project.demo.repository.TicketRepository;
 import com.project.demo.repository.UserRepository;
+import com.project.demo.service.ai.ResolvedTicketIndex;
 import java.util.List;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -28,15 +29,19 @@ public class TicketWorkflowService {
 
 	private final NotificationRepository notificationRepository;
 
+	private final ResolvedTicketIndex resolvedTicketIndex;
+
 	public TicketWorkflowService(
 			TicketRepository ticketRepository,
 			ReplyRepository replyRepository,
 			UserRepository userRepository,
-			NotificationRepository notificationRepository) {
+			NotificationRepository notificationRepository,
+			ResolvedTicketIndex resolvedTicketIndex) {
 		this.ticketRepository = ticketRepository;
 		this.replyRepository = replyRepository;
 		this.userRepository = userRepository;
 		this.notificationRepository = notificationRepository;
+		this.resolvedTicketIndex = resolvedTicketIndex;
 	}
 
 	@Transactional(readOnly = true)
@@ -85,7 +90,18 @@ public class TicketWorkflowService {
 				NotificationType.STATUS_CHANGE,
 				ticket,
 				"您的工单「" + ticket.getTitle() + "」状态已更新为 " + status));
+		if (status == TicketStatus.RESOLVED) {
+			resolvedTicketIndex.index(ticket, latestReplyContent(ticket.getId()));
+		}
 		return ticket;
+	}
+
+	private String latestReplyContent(Long ticketId) {
+		List<Reply> replies = replyRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
+		if (replies.isEmpty()) {
+			return "";
+		}
+		return replies.getLast().getContent();
 	}
 
 	private void ensureSameUser(User currentUser, Long requestedUserId) {
