@@ -15,6 +15,7 @@ import com.project.demo.repository.NotificationRepository;
 import com.project.demo.repository.TicketRepository;
 import com.project.demo.repository.UserRepository;
 import com.project.demo.support.TestAuthSupport;
+import com.project.demo.support.TestAuthSupport.AuthUser;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,12 +49,13 @@ class TicketWorkflowControllerTests {
 	@Test
 	void addsReplyAndCreatesNotificationForSubmitter() throws Exception {
 		User submitter = saveUser("reply-user", UserRole.USER);
-		User agent = saveUser("reply-agent", UserRole.AGENT);
-		Ticket ticket = ticketRepository.save(new Ticket("Cannot login", "Password rejected", submitter));
-		String token = authSupport.createUser(UserRole.AGENT).bearerToken();
+		AuthUser agent = authSupport.createUser(UserRole.AGENT);
+		Ticket ticket = new Ticket("Cannot login", "Password rejected", submitter);
+		ticket.assignTo(agent.user());
+		Ticket savedTicket = ticketRepository.save(ticket);
 
-		mockMvc.perform(post("/api/tickets/{ticketId}/replies", ticket.getId())
-				.header(HttpHeaders.AUTHORIZATION, token)
+		mockMvc.perform(post("/api/tickets/{ticketId}/replies", savedTicket.getId())
+				.header(HttpHeaders.AUTHORIZATION, agent.bearerToken())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 						{
@@ -61,15 +63,15 @@ class TicketWorkflowControllerTests {
 						  "content": "请先尝试重置密码",
 						  "aiAdopted": true
 						}
-						""".formatted(agent.getId())))
+						""".formatted(agent.user().getId())))
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.ticketId").value(ticket.getId()))
-				.andExpect(jsonPath("$.authorId").value(agent.getId()))
+				.andExpect(jsonPath("$.ticketId").value(savedTicket.getId()))
+				.andExpect(jsonPath("$.authorId").value(agent.user().getId()))
 				.andExpect(jsonPath("$.content").value("请先尝试重置密码"))
 				.andExpect(jsonPath("$.aiAdopted").value(true));
 
-		mockMvc.perform(get("/api/tickets/{ticketId}/replies", ticket.getId())
-				.header(HttpHeaders.AUTHORIZATION, token))
+		mockMvc.perform(get("/api/tickets/{ticketId}/replies", savedTicket.getId())
+				.header(HttpHeaders.AUTHORIZATION, agent.bearerToken()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(1)))
 				.andExpect(jsonPath("$[0].content").value("请先尝试重置密码"));
@@ -77,6 +79,52 @@ class TicketWorkflowControllerTests {
 		var notifications = notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(submitter.getId());
 		org.assertj.core.api.Assertions.assertThat(notifications).hasSize(1);
 		org.assertj.core.api.Assertions.assertThat(notifications.get(0).getType()).isEqualTo(NotificationType.NEW_REPLY);
+	}
+
+	@Test
+	void rejectsReplyFromOtherAgent() throws Exception {
+		User submitter = saveUser("reply-denied-user", UserRole.USER);
+		User assignedAgent = saveUser("reply-denied-assigned", UserRole.AGENT);
+		AuthUser otherAgent = authSupport.createUser(UserRole.AGENT);
+		Ticket ticket = new Ticket("Cannot login", "Password rejected", submitter);
+		ticket.assignTo(assignedAgent);
+		Ticket savedTicket = ticketRepository.save(ticket);
+
+		mockMvc.perform(post("/api/tickets/{ticketId}/replies", savedTicket.getId())
+				.header(HttpHeaders.AUTHORIZATION, otherAgent.bearerToken())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+						  "authorId": %d,
+						  "content": "不能回复未分配给自己的工单",
+						  "aiAdopted": false
+						}
+						""".formatted(otherAgent.user().getId())))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value(403));
+	}
+
+	@Test
+	void rejectsReplyWhenAuthorIsNotCurrentUser() throws Exception {
+		User submitter = saveUser("reply-author-user", UserRole.USER);
+		AuthUser currentAgent = authSupport.createUser(UserRole.AGENT);
+		User otherAgent = saveUser("reply-author-other", UserRole.AGENT);
+		Ticket ticket = new Ticket("Cannot login", "Password rejected", submitter);
+		ticket.assignTo(currentAgent.user());
+		Ticket savedTicket = ticketRepository.save(ticket);
+
+		mockMvc.perform(post("/api/tickets/{ticketId}/replies", savedTicket.getId())
+				.header(HttpHeaders.AUTHORIZATION, currentAgent.bearerToken())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+						  "authorId": %d,
+						  "content": "不能冒用其他客服回复",
+						  "aiAdopted": false
+						}
+						""".formatted(otherAgent.getId())))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value(403));
 	}
 
 	@Test
@@ -122,14 +170,13 @@ class TicketWorkflowControllerTests {
 	@Test
 	void updatesTicketStatusToResolved() throws Exception {
 		User submitter = saveUser("status-user", UserRole.USER);
-		User agent = saveUser("status-agent", UserRole.AGENT);
+		AuthUser agent = authSupport.createUser(UserRole.AGENT);
 		Ticket ticket = new Ticket("Need status", "Resolve it", submitter);
-		ticket.assignTo(agent);
+		ticket.assignTo(agent.user());
 		Ticket savedTicket = ticketRepository.save(ticket);
-		String token = authSupport.createUser(UserRole.AGENT).bearerToken();
 
 		mockMvc.perform(patch("/api/tickets/{ticketId}/status", savedTicket.getId())
-				.header(HttpHeaders.AUTHORIZATION, token)
+				.header(HttpHeaders.AUTHORIZATION, agent.bearerToken())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 						{
@@ -139,6 +186,27 @@ class TicketWorkflowControllerTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value("RESOLVED"))
 				.andExpect(jsonPath("$.resolvedAt").isNotEmpty());
+	}
+
+	@Test
+	void rejectsStatusUpdateForUnassignedAgent() throws Exception {
+		User submitter = saveUser("status-denied-user", UserRole.USER);
+		User assignedAgent = saveUser("status-denied-assigned", UserRole.AGENT);
+		AuthUser otherAgent = authSupport.createUser(UserRole.AGENT);
+		Ticket ticket = new Ticket("Need status", "Resolve it", submitter);
+		ticket.assignTo(assignedAgent);
+		Ticket savedTicket = ticketRepository.save(ticket);
+
+		mockMvc.perform(patch("/api/tickets/{ticketId}/status", savedTicket.getId())
+				.header(HttpHeaders.AUTHORIZATION, otherAgent.bearerToken())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+						  "status": "RESOLVED"
+						}
+						"""))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value(403));
 	}
 
 	private User saveUser(String prefix, UserRole role) {

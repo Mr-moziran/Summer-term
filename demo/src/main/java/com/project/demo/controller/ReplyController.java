@@ -2,6 +2,8 @@ package com.project.demo.controller;
 
 import com.project.demo.dto.CreateReplyRequest;
 import com.project.demo.dto.ReplyResponse;
+import com.project.demo.entity.User;
+import com.project.demo.service.CurrentUserService;
 import com.project.demo.service.TicketWorkflowService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -20,13 +22,17 @@ public class ReplyController {
 
 	private final TicketWorkflowService ticketWorkflowService;
 
-	public ReplyController(TicketWorkflowService ticketWorkflowService) {
+	private final CurrentUserService currentUserService;
+
+	public ReplyController(TicketWorkflowService ticketWorkflowService, CurrentUserService currentUserService) {
 		this.ticketWorkflowService = ticketWorkflowService;
+		this.currentUserService = currentUserService;
 	}
 
 	@GetMapping
 	public List<ReplyResponse> listReplies(@PathVariable Long ticketId) {
-		return ticketWorkflowService.listReplies(ticketId).stream()
+		User currentUser = currentUserService.getCurrentUser();
+		return ticketWorkflowService.listReplies(currentUser, ticketId).stream()
 				.map(ReplyResponse::from)
 				.toList();
 	}
@@ -35,8 +41,10 @@ public class ReplyController {
 	public ResponseEntity<ReplyResponse> addReply(
 			@PathVariable Long ticketId,
 			@Valid @RequestBody CreateReplyRequest request) {
+		User currentUser = currentUserService.getCurrentUser();
 		ReplyResponse response = ReplyResponse.from(ticketWorkflowService.addReply(
 				ticketId,
+				currentUser,
 				request.getAuthorId(),
 				request.getContent(),
 				request.isAiAdopted()));

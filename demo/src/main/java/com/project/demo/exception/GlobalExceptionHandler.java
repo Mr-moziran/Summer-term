@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,6 +31,12 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleAuthenticationFailed(AuthenticationFailedException exception) {
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 				.body(new ApiErrorResponse(401, exception.getMessage(), null));
+	}
+
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<ApiErrorResponse> handleAccessDenied(AccessDeniedException exception) {
+		return ResponseEntity.status(HttpStatus.FORBIDDEN)
+				.body(new ApiErrorResponse(403, "权限不足", null));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)

@@ -12,6 +12,7 @@ import com.project.demo.entity.UserRole;
 import com.project.demo.repository.TicketRepository;
 import com.project.demo.repository.UserRepository;
 import com.project.demo.support.TestAuthSupport;
+import com.project.demo.support.TestAuthSupport.AuthUser;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,11 +42,10 @@ class TicketControllerTests {
 
 	@Test
 	void createsTicketForExistingSubmitter() throws Exception {
-		User submitter = saveUser("create-user");
-		String token = authSupport.createUser(UserRole.USER).bearerToken();
+		AuthUser submitter = authSupport.createUser(UserRole.USER);
 
 		mockMvc.perform(post("/api/tickets")
-				.header(HttpHeaders.AUTHORIZATION, token)
+				.header(HttpHeaders.AUTHORIZATION, submitter.bearerToken())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 						{
@@ -53,30 +53,60 @@ class TicketControllerTests {
 						  "title": "无法登录系统",
 						  "description": "昨天开始一直提示密码错误"
 						}
-						""".formatted(submitter.getId())))
+						""".formatted(submitter.user().getId())))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").isNumber())
 				.andExpect(jsonPath("$.title").value("无法登录系统"))
 				.andExpect(jsonPath("$.status").value("PENDING"))
-				.andExpect(jsonPath("$.submitterId").value(submitter.getId()))
+				.andExpect(jsonPath("$.submitterId").value(submitter.user().getId()))
 				.andExpect(jsonPath("$.aiClassified").value(false));
 	}
 
 	@Test
+	void rejectsTicketCreationForOtherSubmitter() throws Exception {
+		AuthUser currentUser = authSupport.createUser(UserRole.USER);
+		User otherSubmitter = saveUser("create-other");
+
+		mockMvc.perform(post("/api/tickets")
+				.header(HttpHeaders.AUTHORIZATION, currentUser.bearerToken())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+						  "submitterId": %d,
+						  "title": "越权创建工单",
+						  "description": "不能替其他用户提交"
+						}
+						""".formatted(otherSubmitter.getId())))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value(403));
+	}
+
+	@Test
 	void listsTicketsWithSubmitterFilter() throws Exception {
-		User alice = saveUser("list-alice");
+		AuthUser alice = authSupport.createUser(UserRole.USER);
 		User bob = saveUser("list-bob");
-		ticketRepository.save(new Ticket("Alice ticket", "Alice description", alice));
+		ticketRepository.save(new Ticket("Alice ticket", "Alice description", alice.user()));
 		ticketRepository.save(new Ticket("Bob ticket", "Bob description", bob));
-		String token = authSupport.createUser(UserRole.USER).bearerToken();
 
 		mockMvc.perform(get("/api/tickets")
-				.header(HttpHeaders.AUTHORIZATION, token)
-				.param("submitterId", alice.getId().toString()))
+				.header(HttpHeaders.AUTHORIZATION, alice.bearerToken())
+				.param("submitterId", alice.user().getId().toString()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content", hasSize(1)))
 				.andExpect(jsonPath("$.content[0].title").value("Alice ticket"))
-				.andExpect(jsonPath("$.content[0].submitterId").value(alice.getId()));
+				.andExpect(jsonPath("$.content[0].submitterId").value(alice.user().getId()));
+	}
+
+	@Test
+	void rejectsTicketListForOtherSubmitterFilter() throws Exception {
+		AuthUser currentUser = authSupport.createUser(UserRole.USER);
+		User otherSubmitter = saveUser("list-other");
+
+		mockMvc.perform(get("/api/tickets")
+				.header(HttpHeaders.AUTHORIZATION, currentUser.bearerToken())
+				.param("submitterId", otherSubmitter.getId().toString()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value(403));
 	}
 
 	@Test
@@ -95,6 +125,18 @@ class TicketControllerTests {
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.code").value(404))
 				.andExpect(jsonPath("$.message").value("工单不存在: 99999999"));
+	}
+
+	@Test
+	void rejectsTicketDetailForOtherSubmitter() throws Exception {
+		AuthUser currentUser = authSupport.createUser(UserRole.USER);
+		User otherSubmitter = saveUser("detail-other");
+		Ticket ticket = ticketRepository.save(new Ticket("Other ticket", "Other description", otherSubmitter));
+
+		mockMvc.perform(get("/api/tickets/{id}", ticket.getId())
+				.header(HttpHeaders.AUTHORIZATION, currentUser.bearerToken()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value(403));
 	}
 
 	private User saveUser(String prefix) {

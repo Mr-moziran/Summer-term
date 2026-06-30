@@ -6,12 +6,14 @@ import com.project.demo.entity.Reply;
 import com.project.demo.entity.Ticket;
 import com.project.demo.entity.TicketStatus;
 import com.project.demo.entity.User;
+import com.project.demo.entity.UserRole;
 import com.project.demo.exception.ResourceNotFoundException;
 import com.project.demo.repository.NotificationRepository;
 import com.project.demo.repository.ReplyRepository;
 import com.project.demo.repository.TicketRepository;
 import com.project.demo.repository.UserRepository;
 import java.util.List;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,17 +40,19 @@ public class TicketWorkflowService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<Reply> listReplies(Long ticketId) {
-		ensureTicketExists(ticketId);
+	public List<Reply> listReplies(User currentUser, Long ticketId) {
+		Ticket ticket = getTicket(ticketId);
+		ensureCanReadTicket(currentUser, ticket);
 		return replyRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
 	}
 
 	@Transactional
-	public Reply addReply(Long ticketId, Long authorId, String content, boolean aiAdopted) {
+	public Reply addReply(Long ticketId, User currentUser, Long authorId, String content, boolean aiAdopted) {
 		Ticket ticket = getTicket(ticketId);
-		User author = getUser(authorId, "回复作者不存在: ");
-		Reply reply = replyRepository.save(new Reply(ticket, author, content.trim(), false, aiAdopted));
-		if (!author.getId().equals(ticket.getSubmitter().getId())) {
+		ensureSameUser(currentUser, authorId);
+		ensureCanHandleTicket(currentUser, ticket);
+		Reply reply = replyRepository.save(new Reply(ticket, currentUser, content.trim(), false, aiAdopted));
+		if (!currentUser.getId().equals(ticket.getSubmitter().getId())) {
 			notificationRepository.save(new Notification(
 					ticket.getSubmitter(),
 					NotificationType.NEW_REPLY,
@@ -72,8 +76,9 @@ public class TicketWorkflowService {
 	}
 
 	@Transactional
-	public Ticket updateStatus(Long ticketId, TicketStatus status) {
+	public Ticket updateStatus(User currentUser, Long ticketId, TicketStatus status) {
 		Ticket ticket = getTicket(ticketId);
+		ensureCanHandleTicket(currentUser, ticket);
 		ticket.changeStatus(status);
 		notificationRepository.save(new Notification(
 				ticket.getSubmitter(),
@@ -83,10 +88,38 @@ public class TicketWorkflowService {
 		return ticket;
 	}
 
-	private void ensureTicketExists(Long ticketId) {
-		if (!ticketRepository.existsById(ticketId)) {
-			throw new ResourceNotFoundException("工单不存在: " + ticketId);
+	private void ensureSameUser(User currentUser, Long requestedUserId) {
+		if (!currentUser.getId().equals(requestedUserId)) {
+			throw new AccessDeniedException("权限不足");
 		}
+	}
+
+	private void ensureCanReadTicket(User currentUser, Ticket ticket) {
+		if (currentUser.getRole() == UserRole.ADMIN) {
+			return;
+		}
+		if (currentUser.getRole() == UserRole.USER
+				&& currentUser.getId().equals(ticket.getSubmitter().getId())) {
+			return;
+		}
+		if (currentUser.getRole() == UserRole.AGENT
+				&& ticket.getAssignee() != null
+				&& currentUser.getId().equals(ticket.getAssignee().getId())) {
+			return;
+		}
+		throw new AccessDeniedException("权限不足");
+	}
+
+	private void ensureCanHandleTicket(User currentUser, Ticket ticket) {
+		if (currentUser.getRole() == UserRole.ADMIN) {
+			return;
+		}
+		if (currentUser.getRole() == UserRole.AGENT
+				&& ticket.getAssignee() != null
+				&& currentUser.getId().equals(ticket.getAssignee().getId())) {
+			return;
+		}
+		throw new AccessDeniedException("权限不足");
 	}
 
 	private Ticket getTicket(Long ticketId) {

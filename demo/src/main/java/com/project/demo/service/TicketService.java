@@ -4,6 +4,7 @@ import com.project.demo.entity.Ticket;
 import com.project.demo.entity.TicketCategory;
 import com.project.demo.entity.TicketStatus;
 import com.project.demo.entity.User;
+import com.project.demo.entity.UserRole;
 import com.project.demo.exception.ResourceNotFoundException;
 import com.project.demo.repository.TicketRepository;
 import com.project.demo.repository.UserRepository;
@@ -13,6 +14,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,26 +31,70 @@ public class TicketService {
 	}
 
 	@Transactional
-	public Ticket createTicket(Long submitterId, String title, String description) {
+	public Ticket createTicket(User currentUser, Long submitterId, String title, String description) {
+		if (currentUser.getRole() == UserRole.USER && !currentUser.getId().equals(submitterId)) {
+			throw new AccessDeniedException("权限不足");
+		}
 		User submitter = userRepository.findById(submitterId)
 				.orElseThrow(() -> new ResourceNotFoundException("提交人不存在: " + submitterId));
 		return ticketRepository.save(new Ticket(title.trim(), description.trim(), submitter));
 	}
 
 	@Transactional(readOnly = true)
-	public Ticket getTicket(Long id) {
-		return ticketRepository.findById(id)
+	public Ticket getTicket(User currentUser, Long id) {
+		Ticket ticket = ticketRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("工单不存在: " + id));
+		ensureCanReadTicket(currentUser, ticket);
+		return ticket;
 	}
 
 	@Transactional(readOnly = true)
 	public Page<Ticket> listTickets(
+			User currentUser,
 			TicketStatus status,
 			TicketCategory category,
 			Long submitterId,
 			Long assigneeId,
 			Pageable pageable) {
-		return ticketRepository.findAll(buildSpecification(status, category, submitterId, assigneeId), pageable);
+		Long effectiveSubmitterId = submitterId;
+		Long effectiveAssigneeId = assigneeId;
+		if (currentUser.getRole() == UserRole.USER) {
+			if (submitterId != null && !currentUser.getId().equals(submitterId)) {
+				throw new AccessDeniedException("权限不足");
+			}
+			if (assigneeId != null) {
+				throw new AccessDeniedException("权限不足");
+			}
+			effectiveSubmitterId = currentUser.getId();
+		}
+		else if (currentUser.getRole() == UserRole.AGENT) {
+			if (assigneeId != null && !currentUser.getId().equals(assigneeId)) {
+				throw new AccessDeniedException("权限不足");
+			}
+			if (submitterId != null) {
+				throw new AccessDeniedException("权限不足");
+			}
+			effectiveAssigneeId = currentUser.getId();
+		}
+		return ticketRepository.findAll(
+				buildSpecification(status, category, effectiveSubmitterId, effectiveAssigneeId),
+				pageable);
+	}
+
+	private void ensureCanReadTicket(User currentUser, Ticket ticket) {
+		if (currentUser.getRole() == UserRole.ADMIN) {
+			return;
+		}
+		if (currentUser.getRole() == UserRole.USER
+				&& currentUser.getId().equals(ticket.getSubmitter().getId())) {
+			return;
+		}
+		if (currentUser.getRole() == UserRole.AGENT
+				&& ticket.getAssignee() != null
+				&& currentUser.getId().equals(ticket.getAssignee().getId())) {
+			return;
+		}
+		throw new AccessDeniedException("权限不足");
 	}
 
 	private Specification<Ticket> buildSpecification(

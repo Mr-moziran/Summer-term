@@ -7,6 +7,8 @@ import com.project.demo.dto.TicketResponse;
 import com.project.demo.dto.UpdateTicketStatusRequest;
 import com.project.demo.entity.TicketCategory;
 import com.project.demo.entity.TicketStatus;
+import com.project.demo.entity.User;
+import com.project.demo.service.CurrentUserService;
 import com.project.demo.service.TicketService;
 import com.project.demo.service.TicketWorkflowService;
 import jakarta.validation.Valid;
@@ -32,15 +34,25 @@ public class TicketController {
 
 	private final TicketWorkflowService ticketWorkflowService;
 
-	public TicketController(TicketService ticketService, TicketWorkflowService ticketWorkflowService) {
+	private final CurrentUserService currentUserService;
+
+	public TicketController(
+			TicketService ticketService,
+			TicketWorkflowService ticketWorkflowService,
+			CurrentUserService currentUserService) {
 		this.ticketService = ticketService;
 		this.ticketWorkflowService = ticketWorkflowService;
+		this.currentUserService = currentUserService;
 	}
 
 	@PostMapping
 	public ResponseEntity<TicketResponse> createTicket(@Valid @RequestBody CreateTicketRequest request) {
-		TicketResponse response = TicketResponse.from(
-				ticketService.createTicket(request.getSubmitterId(), request.getTitle(), request.getDescription()));
+		User currentUser = currentUserService.getCurrentUser();
+		TicketResponse response = TicketResponse.from(ticketService.createTicket(
+				currentUser,
+				request.getSubmitterId(),
+				request.getTitle(),
+				request.getDescription()));
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
@@ -51,13 +63,15 @@ public class TicketController {
 			@RequestParam(required = false) Long submitterId,
 			@RequestParam(required = false) Long assigneeId,
 			@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-		return PageResponse.from(ticketService.listTickets(status, category, submitterId, assigneeId, pageable)
+		User currentUser = currentUserService.getCurrentUser();
+		return PageResponse.from(ticketService.listTickets(currentUser, status, category, submitterId, assigneeId, pageable)
 				.map(TicketResponse::from));
 	}
 
 	@GetMapping("/{id}")
 	public TicketResponse getTicket(@PathVariable Long id) {
-		return TicketResponse.from(ticketService.getTicket(id));
+		User currentUser = currentUserService.getCurrentUser();
+		return TicketResponse.from(ticketService.getTicket(currentUser, id));
 	}
 
 	@PostMapping("/{id}/assign")
@@ -67,6 +81,7 @@ public class TicketController {
 
 	@PatchMapping("/{id}/status")
 	public TicketResponse updateStatus(@PathVariable Long id, @Valid @RequestBody UpdateTicketStatusRequest request) {
-		return TicketResponse.from(ticketWorkflowService.updateStatus(id, request.getStatus()));
+		User currentUser = currentUserService.getCurrentUser();
+		return TicketResponse.from(ticketWorkflowService.updateStatus(currentUser, id, request.getStatus()));
 	}
 }
