@@ -56,6 +56,10 @@ public class User {
 		this.role = role;
 	}
 
+	public void changeStatus(UserStatus status) {
+		this.status = status;
+	}
+
 	@PrePersist
 	void prePersist() {
 		OffsetDateTime now = OffsetDateTime.now();

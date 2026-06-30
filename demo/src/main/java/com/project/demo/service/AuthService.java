@@ -3,6 +3,7 @@ package com.project.demo.service;
 import com.project.demo.dto.AuthResponse;
 import com.project.demo.entity.User;
 import com.project.demo.entity.UserRole;
+import com.project.demo.entity.UserStatus;
 import com.project.demo.exception.AuthenticationFailedException;
 import com.project.demo.exception.DuplicateResourceException;
 import com.project.demo.repository.UserRepository;
@@ -50,6 +51,9 @@ public class AuthService {
 				.orElseThrow(() -> new AuthenticationFailedException("邮箱或密码错误"));
 		if (!passwordEncoder.matches(password, user.getPassword())) {
 			throw new AuthenticationFailedException("邮箱或密码错误");
+		}
+		if (user.getStatus() != UserStatus.ACTIVE) {
+			throw new AuthenticationFailedException("账号已禁用");
 		}
 		return AuthResponse.from(jwtService.generateToken(user), user);
 	}

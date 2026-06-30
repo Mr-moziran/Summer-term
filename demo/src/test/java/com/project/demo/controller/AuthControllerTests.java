@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.project.demo.entity.UserStatus;
 import com.project.demo.repository.UserRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -89,6 +90,28 @@ class AuthControllerTests {
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.code").value(401))
 				.andExpect(jsonPath("$.message").value("邮箱或密码错误"));
+	}
+
+	@Test
+	void rejectsDisabledUserLogin() throws Exception {
+		String suffix = UUID.randomUUID().toString().substring(0, 8);
+		String email = "auth-disabled-" + suffix + "@example.com";
+		register("auth-disabled-" + suffix, email, "secret123");
+		var user = userRepository.findByEmail(email).orElseThrow();
+		user.changeStatus(UserStatus.DISABLED);
+		userRepository.save(user);
+
+		mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+						  "email": "%s",
+						  "password": "secret123"
+						}
+						""".formatted(email)))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.code").value(401))
+				.andExpect(jsonPath("$.message").value("账号已禁用"));
 	}
 
 	@Test
