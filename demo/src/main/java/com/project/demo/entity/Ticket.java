@@ -83,6 +83,17 @@ public class Ticket {
 		this.status = TicketStatus.ASSIGNED;
 	}
 
+	public void changeStatus(TicketStatus status) {
+		this.status = status;
+		OffsetDateTime now = OffsetDateTime.now();
+		if (status == TicketStatus.RESOLVED && this.resolvedAt == null) {
+			this.resolvedAt = now;
+		}
+		if (status == TicketStatus.CLOSED && this.closedAt == null) {
+			this.closedAt = now;
+		}
+	}
+
 	@PrePersist
 	void prePersist() {
 		OffsetDateTime now = OffsetDateTime.now();
