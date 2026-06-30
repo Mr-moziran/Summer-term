@@ -20,6 +20,18 @@ public class GlobalExceptionHandler {
 				.body(new ApiErrorResponse(404, exception.getMessage(), null));
 	}
 
+	@ExceptionHandler(DuplicateResourceException.class)
+	public ResponseEntity<ApiErrorResponse> handleDuplicate(DuplicateResourceException exception) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(new ApiErrorResponse(409, exception.getMessage(), null));
+	}
+
+	@ExceptionHandler(AuthenticationFailedException.class)
+	public ResponseEntity<ApiErrorResponse> handleAuthenticationFailed(AuthenticationFailedException exception) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(new ApiErrorResponse(401, exception.getMessage(), null));
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException exception) {
 		Map<String, String> errors = new LinkedHashMap<>();
