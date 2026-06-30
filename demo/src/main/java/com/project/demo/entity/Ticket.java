@@ -99,6 +99,12 @@ public class Ticket {
 		this.ratingComment = ratingComment;
 	}
 
+	public void applyAiClassification(TicketCategory category, TicketPriority priority) {
+		this.category = category;
+		this.priority = priority;
+		this.aiClassified = true;
+	}
+
 	@PrePersist
 	void prePersist() {
 		OffsetDateTime now = OffsetDateTime.now();

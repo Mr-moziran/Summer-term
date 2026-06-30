@@ -1,5 +1,6 @@
 package com.project.demo.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -7,6 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.project.demo.entity.Ticket;
+import com.project.demo.entity.TicketCategory;
+import com.project.demo.entity.TicketPriority;
 import com.project.demo.entity.User;
 import com.project.demo.entity.UserRole;
 import com.project.demo.repository.TicketRepository;
@@ -40,7 +43,7 @@ class AiSuggestionControllerTests {
 	private TestAuthSupport authSupport;
 
 	@Test
-	void assignedAgentGetsSuggestion() throws Exception {
+	void assignedAgentGetsSuggestionAndClassifiesTicket() throws Exception {
 		User submitter = saveUser("ai-submit", UserRole.USER);
 		AuthUser agent = authSupport.createUser(UserRole.AGENT);
 		Ticket ticket = new Ticket("无法登录系统", "输入正确密码后仍提示密码错误", submitter);
@@ -52,6 +55,11 @@ class AiSuggestionControllerTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.draft", containsString("无法登录系统")))
 				.andExpect(jsonPath("$.similarTickets", hasSize(0)));
+
+		Ticket classifiedTicket = ticketRepository.findById(savedTicket.getId()).orElseThrow();
+		assertThat(classifiedTicket.getCategory()).isEqualTo(TicketCategory.TECHNICAL);
+		assertThat(classifiedTicket.getPriority()).isEqualTo(TicketPriority.HIGH);
+		assertThat(classifiedTicket.isAiClassified()).isTrue();
 	}
 
 	@Test
