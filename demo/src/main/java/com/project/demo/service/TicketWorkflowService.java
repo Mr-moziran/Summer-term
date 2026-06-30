@@ -1,6 +1,5 @@
 package com.project.demo.service;
 
-import com.project.demo.entity.Notification;
 import com.project.demo.entity.NotificationType;
 import com.project.demo.entity.Reply;
 import com.project.demo.entity.Ticket;
@@ -8,7 +7,6 @@ import com.project.demo.entity.TicketStatus;
 import com.project.demo.entity.User;
 import com.project.demo.entity.UserRole;
 import com.project.demo.exception.ResourceNotFoundException;
-import com.project.demo.repository.NotificationRepository;
 import com.project.demo.repository.ReplyRepository;
 import com.project.demo.repository.TicketRepository;
 import com.project.demo.repository.UserRepository;
@@ -27,7 +25,7 @@ public class TicketWorkflowService {
 
 	private final UserRepository userRepository;
 
-	private final NotificationRepository notificationRepository;
+	private final NotificationService notificationService;
 
 	private final ResolvedTicketIndex resolvedTicketIndex;
 
@@ -35,12 +33,12 @@ public class TicketWorkflowService {
 			TicketRepository ticketRepository,
 			ReplyRepository replyRepository,
 			UserRepository userRepository,
-			NotificationRepository notificationRepository,
+			NotificationService notificationService,
 			ResolvedTicketIndex resolvedTicketIndex) {
 		this.ticketRepository = ticketRepository;
 		this.replyRepository = replyRepository;
 		this.userRepository = userRepository;
-		this.notificationRepository = notificationRepository;
+		this.notificationService = notificationService;
 		this.resolvedTicketIndex = resolvedTicketIndex;
 	}
 
@@ -58,11 +56,11 @@ public class TicketWorkflowService {
 		ensureCanHandleTicket(currentUser, ticket);
 		Reply reply = replyRepository.save(new Reply(ticket, currentUser, content.trim(), false, aiAdopted));
 		if (!currentUser.getId().equals(ticket.getSubmitter().getId())) {
-			notificationRepository.save(new Notification(
+			notificationService.createNotification(
 					ticket.getSubmitter(),
 					NotificationType.NEW_REPLY,
 					ticket,
-					"您的工单「" + ticket.getTitle() + "」有新的回复"));
+					"您的工单「" + ticket.getTitle() + "」有新的回复");
 		}
 		return reply;
 	}
@@ -72,11 +70,11 @@ public class TicketWorkflowService {
 		Ticket ticket = getTicket(ticketId);
 		User assignee = getUser(assigneeId, "客服不存在: ");
 		ticket.assignTo(assignee);
-		notificationRepository.save(new Notification(
+		notificationService.createNotification(
 				ticket.getSubmitter(),
 				NotificationType.ASSIGNED,
 				ticket,
-				"您的工单「" + ticket.getTitle() + "」已分配给客服 " + assignee.getUsername()));
+				"您的工单「" + ticket.getTitle() + "」已分配给客服 " + assignee.getUsername());
 		return ticket;
 	}
 
@@ -85,11 +83,11 @@ public class TicketWorkflowService {
 		Ticket ticket = getTicket(ticketId);
 		ensureCanHandleTicket(currentUser, ticket);
 		ticket.changeStatus(status);
-		notificationRepository.save(new Notification(
+		notificationService.createNotification(
 				ticket.getSubmitter(),
 				NotificationType.STATUS_CHANGE,
 				ticket,
-				"您的工单「" + ticket.getTitle() + "」状态已更新为 " + status));
+				"您的工单「" + ticket.getTitle() + "」状态已更新为 " + status);
 		if (status == TicketStatus.RESOLVED) {
 			resolvedTicketIndex.index(ticket, latestReplyContent(ticket.getId()));
 		}

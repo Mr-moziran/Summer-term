@@ -24,13 +24,13 @@ class TicketWorkflowServiceTests {
 		TicketRepository ticketRepository = org.mockito.Mockito.mock(TicketRepository.class);
 		ReplyRepository replyRepository = org.mockito.Mockito.mock(ReplyRepository.class);
 		UserRepository userRepository = org.mockito.Mockito.mock(UserRepository.class);
-		NotificationRepository notificationRepository = org.mockito.Mockito.mock(NotificationRepository.class);
+		NotificationService notificationService = org.mockito.Mockito.mock(NotificationService.class);
 		CapturingResolvedTicketIndex resolvedTicketIndex = new CapturingResolvedTicketIndex();
 		TicketWorkflowService service = new TicketWorkflowService(
 				ticketRepository,
 				replyRepository,
 				userRepository,
-				notificationRepository,
+				notificationService,
 				resolvedTicketIndex);
 		User submitter = user("submitter", UserRole.USER, 1L);
 		User agent = user("agent", UserRole.AGENT, 2L);

@@ -1,6 +1,8 @@
 package com.project.demo.service;
 
 import com.project.demo.entity.Notification;
+import com.project.demo.entity.NotificationType;
+import com.project.demo.entity.Ticket;
 import com.project.demo.entity.User;
 import com.project.demo.exception.ResourceNotFoundException;
 import com.project.demo.repository.NotificationRepository;
@@ -15,8 +17,18 @@ public class NotificationService {
 
 	private final NotificationRepository notificationRepository;
 
-	public NotificationService(NotificationRepository notificationRepository) {
+	private final NotificationPushService notificationPushService;
+
+	public NotificationService(NotificationRepository notificationRepository, NotificationPushService notificationPushService) {
 		this.notificationRepository = notificationRepository;
+		this.notificationPushService = notificationPushService;
+	}
+
+	@Transactional
+	public Notification createNotification(User user, NotificationType type, Ticket ticket, String message) {
+		Notification notification = notificationRepository.save(new Notification(user, type, ticket, message));
+		notificationPushService.push(notification);
+		return notification;
 	}
 
 	@Transactional(readOnly = true)
