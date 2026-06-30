@@ -81,6 +81,24 @@ public class TicketService {
 				pageable);
 	}
 
+	@Transactional
+	public Ticket rateTicket(User currentUser, Long ticketId, Short rating, String comment) {
+		Ticket ticket = ticketRepository.findById(ticketId)
+				.orElseThrow(() -> new ResourceNotFoundException("工单不存在: " + ticketId));
+		if (!currentUser.getId().equals(ticket.getSubmitter().getId())) {
+			throw new AccessDeniedException("权限不足");
+		}
+		ticket.rate(rating, normalizeComment(comment));
+		return ticket;
+	}
+
+	private String normalizeComment(String comment) {
+		if (comment == null || comment.isBlank()) {
+			return null;
+		}
+		return comment.trim();
+	}
+
 	private void ensureCanReadTicket(User currentUser, Ticket ticket) {
 		if (currentUser.getRole() == UserRole.ADMIN) {
 			return;

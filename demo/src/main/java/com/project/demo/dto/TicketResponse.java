@@ -19,6 +19,8 @@ public class TicketResponse {
 	private final Long assigneeId;
 	private final String assigneeUsername;
 	private final boolean aiClassified;
+	private final Short rating;
+	private final String ratingComment;
 	private final OffsetDateTime createdAt;
 	private final OffsetDateTime updatedAt;
 	private final OffsetDateTime resolvedAt;
@@ -36,6 +38,8 @@ public class TicketResponse {
 		this.assigneeId = ticket.getAssignee() == null ? null : ticket.getAssignee().getId();
 		this.assigneeUsername = ticket.getAssignee() == null ? null : ticket.getAssignee().getUsername();
 		this.aiClassified = ticket.isAiClassified();
+		this.rating = ticket.getRating();
+		this.ratingComment = ticket.getRatingComment();
 		this.createdAt = ticket.getCreatedAt();
 		this.updatedAt = ticket.getUpdatedAt();
 		this.resolvedAt = ticket.getResolvedAt();
@@ -88,6 +92,14 @@ public class TicketResponse {
 
 	public boolean isAiClassified() {
 		return aiClassified;
+	}
+
+	public Short getRating() {
+		return rating;
+	}
+
+	public String getRatingComment() {
+		return ratingComment;
 	}
 
 	public OffsetDateTime getCreatedAt() {

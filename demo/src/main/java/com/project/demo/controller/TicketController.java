@@ -3,6 +3,7 @@ package com.project.demo.controller;
 import com.project.demo.dto.AssignTicketRequest;
 import com.project.demo.dto.CreateTicketRequest;
 import com.project.demo.dto.PageResponse;
+import com.project.demo.dto.RateTicketRequest;
 import com.project.demo.dto.TicketResponse;
 import com.project.demo.dto.UpdateTicketStatusRequest;
 import com.project.demo.entity.TicketCategory;
@@ -83,5 +84,11 @@ public class TicketController {
 	public TicketResponse updateStatus(@PathVariable Long id, @Valid @RequestBody UpdateTicketStatusRequest request) {
 		User currentUser = currentUserService.getCurrentUser();
 		return TicketResponse.from(ticketWorkflowService.updateStatus(currentUser, id, request.getStatus()));
+	}
+
+	@PostMapping("/{id}/rate")
+	public TicketResponse rateTicket(@PathVariable Long id, @Valid @RequestBody RateTicketRequest request) {
+		User currentUser = currentUserService.getCurrentUser();
+		return TicketResponse.from(ticketService.rateTicket(currentUser, id, request.getRating(), request.getComment()));
 	}
 }

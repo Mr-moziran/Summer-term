@@ -139,6 +139,63 @@ class TicketControllerTests {
 				.andExpect(jsonPath("$.code").value(403));
 	}
 
+	@Test
+	void ratesOwnTicket() throws Exception {
+		AuthUser submitter = authSupport.createUser(UserRole.USER);
+		Ticket ticket = ticketRepository.save(new Ticket("Rate ticket", "Please rate", submitter.user()));
+
+		mockMvc.perform(post("/api/tickets/{id}/rate", ticket.getId())
+				.header(HttpHeaders.AUTHORIZATION, submitter.bearerToken())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+						  "rating": 5,
+						  "comment": "处理很及时"
+						}
+						"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(ticket.getId()))
+				.andExpect(jsonPath("$.rating").value(5))
+				.andExpect(jsonPath("$.ratingComment").value("处理很及时"));
+	}
+
+	@Test
+	void rejectsRatingForOtherSubmitter() throws Exception {
+		AuthUser currentUser = authSupport.createUser(UserRole.USER);
+		User otherSubmitter = saveUser("rate-other");
+		Ticket ticket = ticketRepository.save(new Ticket("Other ticket", "Other description", otherSubmitter));
+
+		mockMvc.perform(post("/api/tickets/{id}/rate", ticket.getId())
+				.header(HttpHeaders.AUTHORIZATION, currentUser.bearerToken())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+						  "rating": 5,
+						  "comment": "不能评价别人的工单"
+						}
+						"""))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value(403));
+	}
+
+	@Test
+	void rejectsRatingOutsideRange() throws Exception {
+		AuthUser submitter = authSupport.createUser(UserRole.USER);
+		Ticket ticket = ticketRepository.save(new Ticket("Rate ticket", "Please rate", submitter.user()));
+
+		mockMvc.perform(post("/api/tickets/{id}/rate", ticket.getId())
+				.header(HttpHeaders.AUTHORIZATION, submitter.bearerToken())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+						  "rating": 6,
+						  "comment": "超出范围"
+						}
+						"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value(400));
+	}
+
 	private User saveUser(String prefix) {
 		String suffix = UUID.randomUUID().toString().substring(0, 8);
 		return userRepository.save(new User(

@@ -94,6 +94,11 @@ public class Ticket {
 		}
 	}
 
+	public void rate(Short rating, String ratingComment) {
+		this.rating = rating;
+		this.ratingComment = ratingComment;
+	}
+
 	@PrePersist
 	void prePersist() {
 		OffsetDateTime now = OffsetDateTime.now();
