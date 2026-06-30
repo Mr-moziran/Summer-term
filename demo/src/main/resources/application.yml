@@ -32,6 +32,8 @@ spring:
         api-key: ${EMBEDDING_API_KEY:}
 
 app:
+  ai:
+    provider: local
   jwt:
     secret: ${JWT_SECRET:dev-only-change-this-secret-at-least-32-bytes}
     expiration-minutes: 120
