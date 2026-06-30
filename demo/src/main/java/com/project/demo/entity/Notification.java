@@ -53,6 +53,10 @@ public class Notification {
 		this.message = message;
 	}
 
+	public void markRead() {
+		this.isRead = true;
+	}
+
 	@PrePersist
 	void prePersist() {
 		this.createdAt = OffsetDateTime.now();
