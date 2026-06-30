@@ -14,11 +14,13 @@ import com.project.demo.entity.UserRole;
 import com.project.demo.repository.NotificationRepository;
 import com.project.demo.repository.TicketRepository;
 import com.project.demo.repository.UserRepository;
+import com.project.demo.support.TestAuthSupport;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -40,13 +42,18 @@ class TicketWorkflowControllerTests {
 	@Autowired
 	private NotificationRepository notificationRepository;
 
+	@Autowired
+	private TestAuthSupport authSupport;
+
 	@Test
 	void addsReplyAndCreatesNotificationForSubmitter() throws Exception {
 		User submitter = saveUser("reply-user", UserRole.USER);
 		User agent = saveUser("reply-agent", UserRole.AGENT);
 		Ticket ticket = ticketRepository.save(new Ticket("Cannot login", "Password rejected", submitter));
+		String token = authSupport.createUser(UserRole.AGENT).bearerToken();
 
 		mockMvc.perform(post("/api/tickets/{ticketId}/replies", ticket.getId())
+				.header(HttpHeaders.AUTHORIZATION, token)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 						{
@@ -61,7 +68,8 @@ class TicketWorkflowControllerTests {
 				.andExpect(jsonPath("$.content").value("请先尝试重置密码"))
 				.andExpect(jsonPath("$.aiAdopted").value(true));
 
-		mockMvc.perform(get("/api/tickets/{ticketId}/replies", ticket.getId()))
+		mockMvc.perform(get("/api/tickets/{ticketId}/replies", ticket.getId())
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(1)))
 				.andExpect(jsonPath("$[0].content").value("请先尝试重置密码"));
@@ -76,8 +84,10 @@ class TicketWorkflowControllerTests {
 		User submitter = saveUser("assign-user", UserRole.USER);
 		User agent = saveUser("assign-agent", UserRole.AGENT);
 		Ticket ticket = ticketRepository.save(new Ticket("Need help", "Please assign", submitter));
+		String token = authSupport.createUser(UserRole.ADMIN).bearerToken();
 
 		mockMvc.perform(post("/api/tickets/{ticketId}/assign", ticket.getId())
+				.header(HttpHeaders.AUTHORIZATION, token)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 						{
@@ -91,14 +101,35 @@ class TicketWorkflowControllerTests {
 	}
 
 	@Test
+	void rejectsAssignForUserRole() throws Exception {
+		User submitter = saveUser("assign-denied-user", UserRole.USER);
+		User agent = saveUser("assign-denied-agent", UserRole.AGENT);
+		Ticket ticket = ticketRepository.save(new Ticket("Need help", "Please assign", submitter));
+		String token = authSupport.createUser(UserRole.USER).bearerToken();
+
+		mockMvc.perform(post("/api/tickets/{ticketId}/assign", ticket.getId())
+				.header(HttpHeaders.AUTHORIZATION, token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+						  "assigneeId": %d
+						}
+						""".formatted(agent.getId())))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value(403));
+	}
+
+	@Test
 	void updatesTicketStatusToResolved() throws Exception {
 		User submitter = saveUser("status-user", UserRole.USER);
 		User agent = saveUser("status-agent", UserRole.AGENT);
 		Ticket ticket = new Ticket("Need status", "Resolve it", submitter);
 		ticket.assignTo(agent);
 		Ticket savedTicket = ticketRepository.save(ticket);
+		String token = authSupport.createUser(UserRole.AGENT).bearerToken();
 
 		mockMvc.perform(patch("/api/tickets/{ticketId}/status", savedTicket.getId())
+				.header(HttpHeaders.AUTHORIZATION, token)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 						{
