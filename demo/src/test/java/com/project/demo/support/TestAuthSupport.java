@@ -1,9 +1,9 @@
 package com.project.demo.support;
 
-import com.project.demo.entity.User;
-import com.project.demo.entity.UserRole;
-import com.project.demo.repository.UserRepository;
-import com.project.demo.service.JwtService;
+import com.project.demo.user.User;
+import com.project.demo.user.UserRole;
+import com.project.demo.user.UserRepository;
+import com.project.demo.security.JwtService;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 

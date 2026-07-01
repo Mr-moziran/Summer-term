@@ -1,8 +1,7 @@
 /**
  * 工单客服系统后端根包。
  *
- * <p>本模块基于 Spring Boot 提供 REST API、JWT 鉴权、WebSocket 通知、AI 工单建议和
- * PostgreSQL 持久化能力。下级包按典型分层架构组织：controller 负责接口适配，service
- * 负责业务规则，repository 负责数据访问，entity/dto 负责领域模型与接口契约。</p>
+ * <p>下级包按业务能力组织：auth 负责认证，ticket/reply/notification 负责核心工单协作，
+ * admin 负责后台管理，ai 负责模型与向量检索适配，security/websocket/common 提供横切基础设施。</p>
  */
 package com.project.demo;
