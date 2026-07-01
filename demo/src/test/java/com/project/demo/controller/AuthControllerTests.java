@@ -134,6 +134,17 @@ class AuthControllerTests {
 				.andExpect(jsonPath("$.message").value("邮箱已存在"));
 	}
 
+	@Test
+	void rejectsMalformedJsonWithUnifiedError() throws Exception {
+		mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value(400))
+				.andExpect(jsonPath("$.message").value("请求体格式不正确"))
+				.andExpect(jsonPath("$.timestamp").isNotEmpty());
+	}
+
 	private void register(String username, String email, String password) throws Exception {
 		mockMvc.perform(post("/api/auth/register")
 				.contentType(MediaType.APPLICATION_JSON)

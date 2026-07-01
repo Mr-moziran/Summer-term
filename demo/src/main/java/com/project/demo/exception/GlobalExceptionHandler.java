@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -47,6 +48,12 @@ public class GlobalExceptionHandler {
 		}
 		return ResponseEntity.badRequest()
 				.body(new ApiErrorResponse(400, "请求参数校验失败", errors));
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ApiErrorResponse> handleUnreadableMessage(HttpMessageNotReadableException exception) {
+		return ResponseEntity.badRequest()
+				.body(new ApiErrorResponse(400, "请求体格式不正确", null));
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
