@@ -2,6 +2,7 @@ package com.project.demo.controller;
 
 import com.project.demo.dto.NotificationResponse;
 import com.project.demo.dto.PageResponse;
+import com.project.demo.dto.UnreadNotificationCountResponse;
 import com.project.demo.entity.User;
 import com.project.demo.service.CurrentUserService;
 import com.project.demo.service.NotificationService;
@@ -35,6 +36,12 @@ public class NotificationController {
 		User currentUser = currentUserService.getCurrentUser();
 		return PageResponse.from(notificationService.listNotifications(currentUser, unreadOnly, pageable)
 				.map(NotificationResponse::from));
+	}
+
+	@GetMapping("/unread-count")
+	public UnreadNotificationCountResponse countUnread() {
+		User currentUser = currentUserService.getCurrentUser();
+		return new UnreadNotificationCountResponse(notificationService.countUnread(currentUser));
 	}
 
 	@PatchMapping("/{id}/read")

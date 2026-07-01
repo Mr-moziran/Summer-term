@@ -67,6 +67,41 @@ class NotificationControllerTests {
 	}
 
 	@Test
+	void countsOnlyCurrentUserUnreadNotifications() throws Exception {
+		AuthUser currentUser = authSupport.createUser(UserRole.USER);
+		AuthUser otherUser = authSupport.createUser(UserRole.USER);
+		Ticket currentTicket = ticketRepository.save(new Ticket("Current ticket", "Current description", currentUser.user()));
+		Ticket otherTicket = ticketRepository.save(new Ticket("Other ticket", "Other description", otherUser.user()));
+		notificationRepository.save(new Notification(
+				currentUser.user(),
+				NotificationType.STATUS_CHANGE,
+				currentTicket,
+				"未读通知1"));
+		notificationRepository.save(new Notification(
+				currentUser.user(),
+				NotificationType.NEW_REPLY,
+				currentTicket,
+				"未读通知2"));
+		Notification readNotification = notificationRepository.save(new Notification(
+				currentUser.user(),
+				NotificationType.ASSIGNED,
+				currentTicket,
+				"已读通知"));
+		readNotification.markRead();
+		notificationRepository.save(readNotification);
+		notificationRepository.save(new Notification(
+				otherUser.user(),
+				NotificationType.STATUS_CHANGE,
+				otherTicket,
+				"其他用户未读通知"));
+
+		mockMvc.perform(get("/api/notifications/unread-count")
+				.header(HttpHeaders.AUTHORIZATION, currentUser.bearerToken()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.unreadCount").value(2));
+	}
+
+	@Test
 	void marksOwnNotificationAsRead() throws Exception {
 		AuthUser currentUser = authSupport.createUser(UserRole.USER);
 		Ticket ticket = ticketRepository.save(new Ticket("Current ticket", "Current description", currentUser.user()));
