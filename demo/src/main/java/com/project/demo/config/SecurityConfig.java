@@ -15,6 +15,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * HTTP 安全策略配置。
+ *
+ * <p>定义无状态 JWT 认证、接口角色授权和统一 JSON 错误响应，避免 Spring Security 默认跳转登录页。</p>
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {

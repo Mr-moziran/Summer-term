@@ -12,6 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 认证服务。
+ *
+ * <p>负责用户注册、密码哈希、登录校验和 JWT 颁发。邮箱在保存和登录前统一规整，避免大小写造成重复账号。</p>
+ */
 @Service
 public class AuthService {
 

@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 工单回复接口控制器。
+ *
+ * <p>负责读取和新增某个工单下的回复，服务层会继续校验当前用户是否有权查看或处理该工单。</p>
+ */
 @RestController
 @RequestMapping("/api/tickets/{ticketId}/replies")
 public class ReplyController {

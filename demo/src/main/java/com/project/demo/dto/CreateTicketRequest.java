@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+/**
+ * 创建工单请求 DTO，包含提交人、标题和问题描述。
+ */
 public class CreateTicketRequest {
 
 	@NotNull(message = "提交人ID不能为空")

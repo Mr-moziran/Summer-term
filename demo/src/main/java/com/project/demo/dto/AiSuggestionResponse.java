@@ -2,6 +2,9 @@ package com.project.demo.dto;
 
 import java.util.List;
 
+/**
+ * AI 建议响应 DTO，包含回复草稿和相似历史工单列表。
+ */
 public class AiSuggestionResponse {
 
 	private final String draft;

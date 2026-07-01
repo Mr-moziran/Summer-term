@@ -16,6 +16,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 工单处理流程服务。
+ *
+ * <p>封装回复、分配、状态变更、通知触发和已解决工单索引等跨聚合流程，保证一次业务操作处于同一事务边界内。</p>
+ */
 @Service
 public class TicketWorkflowService {
 
@@ -49,6 +54,11 @@ public class TicketWorkflowService {
 		return replyRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
 	}
 
+	/**
+	 * 追加工单回复。
+	 *
+	 * <p>当前版本只允许被分配客服或管理员回复。回复成功后，如果回复人不是提交人，则通知提交人查看新回复。</p>
+	 */
 	@Transactional
 	public Reply addReply(Long ticketId, User currentUser, Long authorId, String content, boolean aiAdopted) {
 		Ticket ticket = getTicket(ticketId);
@@ -65,6 +75,11 @@ public class TicketWorkflowService {
 		return reply;
 	}
 
+	/**
+	 * 分配工单给客服。
+	 *
+	 * <p>控制器层限制该接口仅管理员可调用；服务层负责更新工单状态并通知提交人。</p>
+	 */
 	@Transactional
 	public Ticket assignTicket(Long ticketId, Long assigneeId) {
 		Ticket ticket = getTicket(ticketId);
@@ -78,6 +93,11 @@ public class TicketWorkflowService {
 		return ticket;
 	}
 
+	/**
+	 * 更新工单处理状态。
+	 *
+	 * <p>状态变更会通知提交人；当状态进入 RESOLVED 时，把最新回复作为解决方案写入已解决工单索引。</p>
+	 */
 	@Transactional
 	public Ticket updateStatus(User currentUser, Long ticketId, TicketStatus status) {
 		Ticket ticket = getTicket(ticketId);
@@ -108,6 +128,9 @@ public class TicketWorkflowService {
 		}
 	}
 
+	/**
+	 * 校验工单读取权限：管理员可读全部，用户只读自己提交的工单，客服只读分配给自己的工单。
+	 */
 	private void ensureCanReadTicket(User currentUser, Ticket ticket) {
 		if (currentUser.getRole() == UserRole.ADMIN) {
 			return;

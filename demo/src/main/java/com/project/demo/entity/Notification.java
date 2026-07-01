@@ -14,6 +14,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 
+/**
+ * 通知实体。
+ *
+ * <p>通知作为 WebSocket 实时推送的持久化补偿：即使用户离线，也可以通过 REST 通知列表读取历史消息。</p>
+ */
 @Entity
 @Table(name = "notification")
 public class Notification {

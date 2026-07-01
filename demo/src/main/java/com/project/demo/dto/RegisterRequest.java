@@ -4,6 +4,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/**
+ * 注册请求 DTO，包含用户名、邮箱和密码。
+ */
 public class RegisterRequest {
 
 	@NotBlank(message = "用户名不能为空")

@@ -18,6 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 管理员用户管理接口控制器。
+ *
+ * <p>提供用户列表筛选和账号启用/禁用操作，入口权限由 SecurityConfig 限制为 ADMIN。</p>
+ */
 @RestController
 @RequestMapping("/api/admin/users")
 public class AdminUserController {

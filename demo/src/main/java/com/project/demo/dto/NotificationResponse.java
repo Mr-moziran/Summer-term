@@ -4,6 +4,9 @@ import com.project.demo.entity.Notification;
 import com.project.demo.entity.NotificationType;
 import java.time.OffsetDateTime;
 
+/**
+ * 通知响应 DTO，供通知列表、WebSocket 推送和未读状态展示使用。
+ */
 public class NotificationResponse {
 
 	private final Long id;

@@ -5,6 +5,9 @@ import com.project.demo.entity.UserRole;
 import com.project.demo.entity.UserStatus;
 import java.time.OffsetDateTime;
 
+/**
+ * 用户响应 DTO，展示用户基本资料、角色、状态和时间字段。
+ */
 public class UserResponse {
 
 	private final Long id;

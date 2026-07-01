@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+/**
+ * REST 全局异常处理器。
+ *
+ * <p>把业务异常、认证授权异常、参数校验异常和 JSON 解析异常统一转成 ApiErrorResponse，
+ * 保持前端错误处理格式稳定。</p>
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -40,6 +46,9 @@ public class GlobalExceptionHandler {
 				.body(new ApiErrorResponse(403, "权限不足", null));
 	}
 
+	/**
+	 * Bean Validation 请求体校验失败时，按字段返回错误原因，便于前端表单逐项展示。
+	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException exception) {
 		Map<String, String> errors = new LinkedHashMap<>();

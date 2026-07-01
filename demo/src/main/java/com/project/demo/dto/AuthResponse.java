@@ -3,6 +3,9 @@ package com.project.demo.dto;
 import com.project.demo.entity.User;
 import com.project.demo.entity.UserRole;
 
+/**
+ * 认证成功响应 DTO，返回 JWT 和当前用户概要信息。
+ */
 public class AuthResponse {
 
 	private final String token;

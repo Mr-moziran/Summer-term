@@ -3,6 +3,9 @@ package com.project.demo.dto;
 import com.project.demo.entity.TicketStatus;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * 工单状态更新请求 DTO，指定目标状态。
+ */
 public class UpdateTicketStatusRequest {
 
 	@NotNull(message = "工单状态不能为空")

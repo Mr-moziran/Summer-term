@@ -19,6 +19,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * JWT 请求过滤器。
+ *
+ * <p>每个 HTTP 请求只执行一次：解析 Authorization Bearer Token，校验签名和用户状态，
+ * 并把用户 id 与角色写入 Spring Security 上下文，供后续权限规则和 CurrentUserService 使用。</p>
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 

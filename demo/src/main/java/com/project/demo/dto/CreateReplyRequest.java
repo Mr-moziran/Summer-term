@@ -3,6 +3,9 @@ package com.project.demo.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * 新增回复请求 DTO，包含作者、回复内容和是否采纳 AI 草稿。
+ */
 public class CreateReplyRequest {
 
 	@NotNull(message = "回复作者ID不能为空")

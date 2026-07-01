@@ -11,6 +11,12 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 管理员统计服务。
+ *
+ * <p>通过 SQL 汇总今日工单、待处理数量、平均首次响应、类型分布、AI 采纳率和客服绩效。
+ * 统计类查询使用 JdbcTemplate，便于表达聚合和窗口逻辑。</p>
+ */
 @Service
 public class AdminStatsService {
 
@@ -35,6 +41,12 @@ public class AdminStatsService {
 				roundTwoDecimals(aiAdoptionRate));
 	}
 
+	/**
+	 * 统计客服工作量和绩效。
+	 *
+	 * <p>使用 CTE 分别计算分配/解决数量、回复数量、AI 采纳率和首次响应时间，再按客服合并，
+	 * 避免在 Java 侧手动拼装多轮查询结果。</p>
+	 */
 	@Transactional(readOnly = true)
 	public List<AgentPerformanceResponse> listAgentPerformance() {
 		return jdbcTemplate.query("""

@@ -9,6 +9,11 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+/**
+ * PgVector 相似工单检索实现。
+ *
+ * <p>使用 Spring AI VectorStore 生成查询向量并在 vector_store 中做相似度检索，再把文档元数据还原成业务上下文。</p>
+ */
 @Component
 @ConditionalOnProperty(name = "app.ai.similarity.provider", havingValue = "pgvector")
 public class PgVectorSimilarTicketSearch implements SimilarTicketSearch {
@@ -34,6 +39,11 @@ public class PgVectorSimilarTicketSearch implements SimilarTicketSearch {
 				.toList();
 	}
 
+	/**
+	 * 将 Spring AI Document 转换为业务上下文。
+	 *
+	 * <p>metadata 来自索引写入阶段，包含 ticketId/title/solution；缺失时使用文档正文作为兜底解决方案。</p>
+	 */
 	private SimilarTicketContext toContext(Document document) {
 		Map<String, Object> metadata = document.getMetadata();
 		Long ticketId = toLong(metadata.get("ticketId"));

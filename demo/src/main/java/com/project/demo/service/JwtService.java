@@ -9,6 +9,11 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * JWT 生成与校验服务。
+ *
+ * <p>Token 中保存用户 id、角色和过期时间；业务层不直接解析 JWT，而通过认证过滤器写入安全上下文。</p>
+ */
 @Service
 public class JwtService {
 

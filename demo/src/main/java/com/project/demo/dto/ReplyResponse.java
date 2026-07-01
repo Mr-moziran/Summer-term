@@ -3,6 +3,9 @@ package com.project.demo.dto;
 import com.project.demo.entity.Reply;
 import java.time.OffsetDateTime;
 
+/**
+ * 回复响应 DTO，展示回复作者、内容、AI 相关标记和创建时间。
+ */
 public class ReplyResponse {
 
 	private final Long id;

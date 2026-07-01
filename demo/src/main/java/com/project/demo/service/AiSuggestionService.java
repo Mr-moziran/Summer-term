@@ -16,6 +16,12 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * AI 建议编排服务。
+ *
+ * <p>客服打开工单时同步完成权限校验、必要分类、相似历史工单检索和回复草稿生成。
+ * 具体 AI 与向量实现通过 service.ai 端口注入，默认不依赖外部服务。</p>
+ */
 @Service
 public class AiSuggestionService {
 
@@ -32,6 +38,12 @@ public class AiSuggestionService {
 		this.similarTicketSearch = similarTicketSearch;
 	}
 
+	/**
+	 * 生成客服处理建议。
+	 *
+	 * <p>这是 AI 流程的同步入口：先确认当前客服或管理员有权查看该工单，再按需分类，随后检索相似历史案例，
+	 * 最后由 AI 客户端生成可编辑的回复草稿。</p>
+	 */
 	@Transactional
 	public AiSuggestionResponse suggest(User currentUser, Long ticketId) {
 		Ticket ticket = ticketRepository.findById(ticketId)
@@ -56,6 +68,9 @@ public class AiSuggestionService {
 		throw new AccessDeniedException("权限不足");
 	}
 
+	/**
+	 * 仅对未分类工单调用 AI 分类，避免重复覆盖人工或既有分类结果。
+	 */
 	private void classifyIfNeeded(Ticket ticket) {
 		if (ticket.isAiClassified()) {
 			return;

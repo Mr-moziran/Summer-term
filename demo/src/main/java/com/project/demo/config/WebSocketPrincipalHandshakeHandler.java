@@ -7,6 +7,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
+/**
+ * WebSocket Principal 绑定器。
+ *
+ * <p>从握手属性中取出认证通过的用户 id，构造成 Spring WebSocket 用户身份。</p>
+ */
 @Component
 public class WebSocketPrincipalHandshakeHandler extends DefaultHandshakeHandler {
 

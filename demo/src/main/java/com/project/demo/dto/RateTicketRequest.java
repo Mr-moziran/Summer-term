@@ -5,6 +5,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+/**
+ * 工单评分请求 DTO，包含 1 到 5 分评分和可选评价内容。
+ */
 public class RateTicketRequest {
 
 	@NotNull(message = "评分不能为空")

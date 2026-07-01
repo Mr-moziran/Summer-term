@@ -8,6 +8,11 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+/**
+ * DeepSeek Chat AI 客户端实现。
+ *
+ * <p>通过 Spring AI OpenAI 兼容接口调用 DeepSeek，负责分类 Prompt 和 RAG 回复草稿 Prompt。</p>
+ */
 @Component
 @ConditionalOnProperty(name = "app.ai.provider", havingValue = "deepseek")
 public class DeepSeekTicketAiClient implements TicketAiClient {

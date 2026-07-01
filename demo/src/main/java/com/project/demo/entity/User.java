@@ -12,6 +12,11 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 
+/**
+ * 系统用户实体。
+ *
+ * <p>用户包含登录凭证、角色、账号状态和头像信息。角色用于接口授权，状态用于禁用账号后阻止继续访问。</p>
+ */
 @Entity
 @Table(name = "users")
 public class User {

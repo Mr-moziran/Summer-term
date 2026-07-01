@@ -13,6 +13,12 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * WebSocket 握手鉴权拦截器。
+ *
+ * <p>前端在连接 /ws/notifications 时通过 token 查询参数传入 JWT；拦截器校验后把用户 id 放入握手属性，
+ * 后续由握手处理器转换为 Principal。</p>
+ */
 @Component
 public class WebSocketAuthenticationInterceptor implements HandshakeInterceptor {
 

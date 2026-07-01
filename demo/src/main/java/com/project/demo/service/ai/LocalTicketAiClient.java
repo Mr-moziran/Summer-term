@@ -8,6 +8,11 @@ import java.util.Locale;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+/**
+ * 本地确定性 AI 客户端实现。
+ *
+ * <p>默认启用，不访问外部模型。用于开发、测试和 DeepSeek 不可用时的稳定降级路径。</p>
+ */
 @Component
 @ConditionalOnProperty(name = "app.ai.provider", havingValue = "local", matchIfMissing = true)
 public class LocalTicketAiClient implements TicketAiClient {

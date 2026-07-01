@@ -7,6 +7,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+/**
+ * 当前登录用户解析服务。
+ *
+ * <p>从 Spring Security 上下文读取 JWT 过滤器写入的用户 id，再查询数据库获得最新用户状态。</p>
+ */
 @Service
 public class CurrentUserService {
 

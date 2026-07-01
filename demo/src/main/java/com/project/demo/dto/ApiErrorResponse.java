@@ -2,6 +2,9 @@ package com.project.demo.dto;
 
 import java.time.OffsetDateTime;
 
+/**
+ * 统一错误响应 DTO，所有 REST 错误都按 code/message/data/timestamp 输出。
+ */
 public class ApiErrorResponse {
 
 	private final int code;

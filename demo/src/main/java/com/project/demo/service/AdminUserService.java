@@ -14,6 +14,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 管理员用户服务。
+ *
+ * <p>提供用户列表过滤和账号状态变更能力，用于管理员端用户管理页面。</p>
+ */
 @Service
 public class AdminUserService {
 

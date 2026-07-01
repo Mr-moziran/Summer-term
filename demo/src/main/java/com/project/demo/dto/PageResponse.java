@@ -3,6 +3,9 @@ package com.project.demo.dto;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
+/**
+ * 统一分页响应 DTO，包装 Spring Data Page 并输出前端常用分页字段。
+ */
 public class PageResponse<T> {
 
 	private final List<T> content;

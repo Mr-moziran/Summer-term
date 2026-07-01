@@ -12,6 +12,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 
+/**
+ * 工单回复实体。
+ *
+ * <p>回复既包含人工回复，也记录 AI 草稿是否被采纳，用于后续统计 AI 采纳率。</p>
+ */
 @Entity
 @Table(name = "reply")
 public class Reply {

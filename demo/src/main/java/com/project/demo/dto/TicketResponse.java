@@ -6,6 +6,9 @@ import com.project.demo.entity.TicketPriority;
 import com.project.demo.entity.TicketStatus;
 import java.time.OffsetDateTime;
 
+/**
+ * 工单响应 DTO，聚合工单主体信息、提交人、处理人、评分和时间字段。
+ */
 public class TicketResponse {
 
 	private final Long id;

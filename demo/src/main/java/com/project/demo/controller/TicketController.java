@@ -27,6 +27,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 工单 REST 接口控制器。
+ *
+ * <p>承接工单创建、查询、分配、状态更新和评分等 HTTP 请求，具体权限和业务规则委托给服务层。</p>
+ */
 @RestController
 @RequestMapping("/api/tickets")
 public class TicketController {

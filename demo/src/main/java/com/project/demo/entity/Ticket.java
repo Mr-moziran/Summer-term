@@ -15,6 +15,12 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 
+/**
+ * 工单实体。
+ *
+ * <p>工单是系统核心聚合，记录提交人、处理客服、分类、优先级、状态流转、评分和关键时间点。
+ * 实体方法只封装自身状态变化，跨聚合通知和权限判断由 service 层完成。</p>
+ */
 @Entity
 @Table(name = "ticket")
 public class Ticket {

@@ -5,6 +5,11 @@ import com.project.demo.entity.Notification;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+/**
+ * WebSocket 通知推送服务。
+ *
+ * <p>把已持久化通知转换为前端 DTO，并发送到目标用户的 /queue/notifications。</p>
+ */
 @Service
 public class NotificationPushService {
 

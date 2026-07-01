@@ -1,5 +1,8 @@
 package com.project.demo.dto;
 
+/**
+ * 客服绩效响应 DTO，汇总单个客服的分配量、解决量、回复量、AI 采纳率和平均响应时间。
+ */
 public class AgentPerformanceResponse {
 
 	private final Long agentId;

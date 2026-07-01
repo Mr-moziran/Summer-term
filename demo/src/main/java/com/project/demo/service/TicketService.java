@@ -18,6 +18,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 工单基础服务。
+ *
+ * <p>负责工单创建、查询、列表过滤和用户评分，重点处理不同角色在工单可见性上的差异。</p>
+ */
 @Service
 public class TicketService {
 
@@ -30,6 +35,11 @@ public class TicketService {
 		this.userRepository = userRepository;
 	}
 
+	/**
+	 * 创建工单。
+	 *
+	 * <p>普通用户只能以自己身份提交；管理员或客服代建时允许指定提交人，但提交人必须存在。</p>
+	 */
 	@Transactional
 	public Ticket createTicket(User currentUser, Long submitterId, String title, String description) {
 		if (currentUser.getRole() == UserRole.USER && !currentUser.getId().equals(submitterId)) {
@@ -48,6 +58,11 @@ public class TicketService {
 		return ticket;
 	}
 
+	/**
+	 * 按角色安全地查询工单列表。
+	 *
+	 * <p>USER 强制限定为自己的提交工单；AGENT 强制限定为分配给自己的工单；ADMIN 可按任意条件过滤。</p>
+	 */
 	@Transactional(readOnly = true)
 	public Page<Ticket> listTickets(
 			User currentUser,
@@ -115,6 +130,11 @@ public class TicketService {
 		throw new AccessDeniedException("权限不足");
 	}
 
+	/**
+	 * 构造动态查询条件。
+	 *
+	 * <p>这里仅拼接过滤谓词，不做权限判断；调用方必须先把角色可见范围转换为有效的 submitterId/assigneeId。</p>
+	 */
 	private Specification<Ticket> buildSpecification(
 			TicketStatus status,
 			TicketCategory category,

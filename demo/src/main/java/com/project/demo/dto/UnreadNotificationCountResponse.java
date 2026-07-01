@@ -1,5 +1,8 @@
 package com.project.demo.dto;
 
+/**
+ * 未读通知数量响应 DTO，用于前端通知角标。
+ */
 public class UnreadNotificationCountResponse {
 
 	private final long unreadCount;

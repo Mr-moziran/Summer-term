@@ -3,6 +3,9 @@ package com.project.demo.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+/**
+ * 登录请求 DTO，包含邮箱和密码。
+ */
 public class LoginRequest {
 
 	@NotBlank(message = "邮箱不能为空")

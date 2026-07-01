@@ -1,5 +1,8 @@
 package com.project.demo.dto;
 
+/**
+ * 相似历史工单响应 DTO，展示命中的历史工单、解决方案和相似度分数。
+ */
 public class SimilarTicketResponse {
 
 	private final Long ticketId;

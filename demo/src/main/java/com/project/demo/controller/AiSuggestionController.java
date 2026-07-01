@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * AI 建议接口控制器。
+ *
+ * <p>客服或管理员打开工单处理页时调用该接口，同步返回 AI 回复草稿和相似历史工单。</p>
+ */
 @RestController
 @RequestMapping("/api/ai/suggest")
 public class AiSuggestionController {

@@ -8,6 +8,11 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+/**
+ * PgVector 已解决工单索引实现。
+ *
+ * <p>把已解决工单的标题、描述、解决方案和元数据写入 Spring AI VectorStore，供后续相似检索使用。</p>
+ */
 @Component
 @ConditionalOnProperty(name = "app.ai.index.provider", havingValue = "pgvector")
 public class PgVectorResolvedTicketIndex implements ResolvedTicketIndex {

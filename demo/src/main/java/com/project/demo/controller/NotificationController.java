@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 通知接口控制器。
+ *
+ * <p>提供当前用户通知列表、未读数量和标记已读能力，用于前端消息中心和通知角标。</p>
+ */
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {

@@ -2,6 +2,9 @@ package com.project.demo.dto;
 
 import java.util.Map;
 
+/**
+ * 管理员数据大盘响应 DTO，包含今日工单、待处理数量、平均响应、分类分布和 AI 采纳率。
+ */
 public class AdminStatsResponse {
 
 	private final long todayTotal;
