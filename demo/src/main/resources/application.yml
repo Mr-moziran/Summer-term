@@ -34,6 +34,13 @@ spring:
 app:
   ai:
     provider: local
+    ask:
+      provider: local
+      high-threshold: 0.82
+      medium-threshold: 0.70
+      top-k: 3
+      knowledge:
+        provider: none
     similarity:
       provider: none
     index:
