@@ -1,21 +1,54 @@
 spring:
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
   datasource:
     url: jdbc:postgresql://localhost:5432/ticket_system
     username: postgres
     password: postgres
   jpa:
     hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: none
     show-sql: true
   ai:
-    deepseek:
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        dimensions: 1024
+        distance-type: COSINE_DISTANCE
+        index-type: HNSW
+    model:
+      chat: openai
+      embedding: openai
+    openai:
       api-key: ${DS_API_KEY}
       chat:
+        base-url: https://api.deepseek.com
+        api-key: ${DS_API_KEY}
         options:
-          model: deepseek-chat
+          model: deepseek-v4-flash
+          temperature: 0.3
+      embedding:
+        options:
+          model: BAAI/bge-m3
+        base-url: https://api.siliconflow.cn
+        api-key: ${EMBEDDING_API_KEY:}
 
-  config:
-    import: optional:file:../.env.properties
+app:
+  ai:
+    provider: local
+    ask:
+      provider: local
+      high-threshold: 0.82
+      medium-threshold: 0.70
+      top-k: 3
+      knowledge:
+        provider: none
+    similarity:
+      provider: none
+    index:
+      provider: none
+  jwt:
+    secret: ${JWT_SECRET:dev-only-change-this-secret-at-least-32-bytes}
+    expiration-minutes: 120
