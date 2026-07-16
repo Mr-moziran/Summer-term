@@ -115,7 +115,7 @@
               </div>
             </div>
           </div>
-          <el-empty v-else description="点击"加载AI建议"获取智能回复" :image-size="100" />
+          <el-empty v-else description="点击「加载AI建议」获取智能回复" :image-size="100" />
         </el-card>
 
         <!-- 回复编辑器 -->
