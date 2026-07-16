@@ -2,6 +2,8 @@ package com.project.demo.service.notification;
 
 import com.project.demo.domain.model.Notification;
 import com.project.demo.domain.dto.response.NotificationResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class NotificationPushService {
+
+	private static final Logger log = LoggerFactory.getLogger(NotificationPushService.class);
 
 	static final String NOTIFICATION_DESTINATION = "/queue/notifications";
 
@@ -26,5 +30,9 @@ public class NotificationPushService {
 				notification.getUser().getId().toString(),
 				NOTIFICATION_DESTINATION,
 				NotificationResponse.from(notification));
+		log.info("通知已推送: userId={}, type={}, ticketId={}",
+				notification.getUser().getId(),
+				notification.getType(),
+				notification.getTicket().getId());
 	}
 }

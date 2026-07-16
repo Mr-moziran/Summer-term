@@ -9,6 +9,8 @@ import com.project.demo.domain.dto.response.EscalatedTicketResponse;
 import com.project.demo.domain.dto.response.KnowledgeReferenceResponse;
 import com.project.demo.service.ticket.TicketService;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class AskAiService {
+
+	private static final Logger log = LoggerFactory.getLogger(AskAiService.class);
 
 	private static final String MEDIUM_CONFIDENCE_WARNING =
 			"该回答基于现有知识库资料生成，可能不完整。如未解决，可输入“转人工”继续处理。";
@@ -50,6 +54,8 @@ public class AskAiService {
 				properties.getTopK(),
 				properties.getMediumThreshold());
 		AskAiConfidence confidence = confidence(documents);
+		log.info("用户自助问答: userId={}, 知识库命中={}, 置信度={}",
+				currentUser.getId(), documents.size(), confidence);
 		if (confidence == AskAiConfidence.LOW) {
 			return escalate(currentUser, normalizedQuestion, documents,
 					new EscalationRequest(null, "知识库资料不足，无法可靠回答", summarize(normalizedQuestion)));
@@ -87,6 +93,7 @@ public class AskAiService {
 		String title = abbreviate("AI未能解答：" + summary, 200);
 		String description = buildEscalationDescription(question, documents, escalationRequest);
 		Ticket ticket = ticketService.createTicket(currentUser, currentUser.getId(), title, description);
+		log.info("自助问答转人工: userId={}, 生成工单ticketId={}", currentUser.getId(), ticket.getId());
 		return new AskAiResponse(
 				AskAiResultType.ESCALATED,
 				null,

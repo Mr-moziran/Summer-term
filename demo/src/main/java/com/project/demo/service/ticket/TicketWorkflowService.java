@@ -13,6 +13,8 @@ import com.project.demo.repository.TicketRepository;
 import com.project.demo.repository.UserRepository;
 import com.project.demo.service.ai.ticket.ResolvedTicketIndex;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class TicketWorkflowService {
+
+	private static final Logger log = LoggerFactory.getLogger(TicketWorkflowService.class);
 
 	private final TicketRepository ticketRepository;
 
@@ -66,6 +70,8 @@ public class TicketWorkflowService {
 		ensureSameUser(currentUser, authorId);
 		ensureCanHandleTicket(currentUser, ticket);
 		Reply reply = replyRepository.save(new Reply(ticket, currentUser, content.trim(), false, aiAdopted));
+		log.info("工单新增回复: ticketId={}, replyId={}, authorId={}, aiAdopted={}",
+				ticketId, reply.getId(), currentUser.getId(), aiAdopted);
 		if (!currentUser.getId().equals(ticket.getSubmitter().getId())) {
 			notificationService.createNotification(
 					ticket.getSubmitter(),
@@ -86,6 +92,7 @@ public class TicketWorkflowService {
 		Ticket ticket = getTicket(ticketId);
 		User assignee = getUser(assigneeId, "客服不存在: ");
 		ticket.assignTo(assignee);
+		log.info("工单已分配: ticketId={}, assigneeId={}", ticketId, assigneeId);
 		notificationService.createNotification(
 				ticket.getSubmitter(),
 				NotificationType.ASSIGNED,
@@ -104,6 +111,7 @@ public class TicketWorkflowService {
 		Ticket ticket = getTicket(ticketId);
 		ensureCanHandleTicket(currentUser, ticket);
 		ticket.changeStatus(status);
+		log.info("工单状态变更: ticketId={}, newStatus={}, operatorId={}", ticketId, status, currentUser.getId());
 		notificationService.createNotification(
 				ticket.getSubmitter(),
 				NotificationType.STATUS_CHANGE,
@@ -111,6 +119,7 @@ public class TicketWorkflowService {
 				"您的工单「" + ticket.getTitle() + "」状态已更新为 " + status);
 		if (status == TicketStatus.RESOLVED) {
 			resolvedTicketIndex.index(ticket, latestReplyContent(ticket.getId()));
+			log.info("已解决工单写入向量索引: ticketId={}", ticketId);
 		}
 		return ticket;
 	}
