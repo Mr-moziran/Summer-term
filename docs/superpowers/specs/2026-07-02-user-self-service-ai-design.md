@@ -12,6 +12,7 @@
 - 知识库命中中置信时回答，并提示“该回答基于现有知识库资料生成，可能不完整”。
 - 知识库低置信或无命中时，不生成不可靠答案，自动创建人工工单。
 - 用户输入“转人工”“找客服”“人工处理”“没解决”“我要投诉”等相似意图时，由 LLM 通过受控工具调用触发建单。
+- 明显不属于企业 SaaS 客服场景的问题（如天气、新闻、股票、娱乐）必须直接拒答，不检索知识库、不调用模型且不创建工单。
 - 创建工单时提交人固定为当前登录用户，LLM 不能指定提交人或处理人。
 - 首版不新增表结构，转人工上下文写入现有 `ticket.description`。
 
@@ -83,6 +84,19 @@ Content-Type: application/json
 }
 ```
 
+超出业务范围：
+
+```json
+{
+  "resultType": "OUT_OF_SCOPE",
+  "answer": "抱歉，我只能协助本系统的账号登录、套餐账单、退款、工单、权限和功能使用问题。",
+  "warning": null,
+  "canEscalate": false,
+  "references": [],
+  "ticket": null
+}
+```
+
 自动转人工：
 
 ```json
@@ -122,15 +136,16 @@ Content-Type: application/json
 
 1. `AskAiController` 调用 `CurrentUserService.getCurrentUser()`。
 2. `AskAiService` 校验问题非空并裁剪长度。
-3. `KnowledgeSearch` 根据问题检索知识库。
-4. 后端根据最高相似度做初步置信度分级：
+3. 后端先判断问题是否明显超出企业 SaaS 客服支持范围；若超出，直接返回 `OUT_OF_SCOPE`，不检索、不调用模型、不建单。
+4. `KnowledgeSearch` 根据问题检索知识库。
+5. 后端根据最高相似度做初步置信度分级：
    - 高置信：允许 LLM 基于资料回答。
    - 中置信：允许 LLM 基于资料回答，但响应必须带 warning。
    - 低置信或无资料：跳过自由回答，直接创建人工工单。
-5. 如果用户文本包含明显转人工意图，LLM 应调用建单工具；后端也保留关键词兜底判断。
-6. LLM 返回回答或工具调用结果。
-7. 如果发生工具调用，后端使用当前用户创建工单。
-8. 返回 `ANSWERED`、`ANSWERED_WITH_WARNING` 或 `ESCALATED`。
+6. 如果用户文本包含明显转人工意图，LLM 应调用建单工具；后端也保留关键词兜底判断。
+7. LLM 返回回答或工具调用结果。
+8. 如果发生工具调用，后端使用当前用户创建工单。
+9. 返回 `ANSWERED`、`ANSWERED_WITH_WARNING`、`OUT_OF_SCOPE` 或 `ESCALATED`。
 
 置信度阈值首版写入配置，建议默认：
 

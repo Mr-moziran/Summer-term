@@ -53,10 +53,14 @@ app:
       top-k: 3
       knowledge:
         provider: pgvector
+        seed:
+          enabled: false
     similarity:
       provider: pgvector
     index:
       provider: pgvector
+      seed:
+        enabled: false
   jwt:
     secret: ${JWT_SECRET:dev-only-change-this-secret-at-least-32-bytes}
     expiration-minutes: 120
