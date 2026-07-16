@@ -11,6 +11,8 @@ import com.project.demo.repository.UserRepository;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -25,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class TicketService {
+
+	private static final Logger log = LoggerFactory.getLogger(TicketService.class);
 
 	private final TicketRepository ticketRepository;
 
@@ -47,7 +51,9 @@ public class TicketService {
 		}
 		User submitter = userRepository.findById(submitterId)
 				.orElseThrow(() -> new ResourceNotFoundException("提交人不存在: " + submitterId));
-		return ticketRepository.save(new Ticket(title.trim(), description.trim(), submitter));
+		Ticket ticket = ticketRepository.save(new Ticket(title.trim(), description.trim(), submitter));
+		log.info("工单创建成功: ticketId={}, submitterId={}", ticket.getId(), submitterId);
+		return ticket;
 	}
 
 	@Transactional(readOnly = true)

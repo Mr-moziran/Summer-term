@@ -8,6 +8,8 @@ import com.project.demo.exception.AuthenticationFailedException;
 import com.project.demo.exception.DuplicateResourceException;
 import com.project.demo.repository.UserRepository;
 import com.project.demo.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class AuthService {
+
+	private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
 	private final UserRepository userRepository;
 
@@ -48,6 +52,7 @@ public class AuthService {
 				normalizedEmail,
 				passwordEncoder.encode(password),
 				UserRole.USER));
+		log.info("用户注册成功: userId={}, username={}", user.getId(), normalizedUsername);
 		return AuthResponse.from(jwtService.generateToken(user), user);
 	}
 
@@ -61,6 +66,7 @@ public class AuthService {
 		if (user.getStatus() != UserStatus.ACTIVE) {
 			throw new AuthenticationFailedException("账号已禁用");
 		}
+		log.info("用户登录成功: userId={}, role={}", user.getId(), user.getRole());
 		return AuthResponse.from(jwtService.generateToken(user), user);
 	}
 

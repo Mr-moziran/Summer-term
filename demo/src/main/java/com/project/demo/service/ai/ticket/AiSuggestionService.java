@@ -8,6 +8,8 @@ import com.project.demo.domain.dto.response.SimilarTicketResponse;
 import com.project.demo.exception.ResourceNotFoundException;
 import com.project.demo.repository.TicketRepository;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class AiSuggestionService {
+
+	private static final Logger log = LoggerFactory.getLogger(AiSuggestionService.class);
 
 	private final TicketRepository ticketRepository;
 	private final TicketAiClient ticketAiClient;
@@ -45,10 +49,13 @@ public class AiSuggestionService {
 		Ticket ticket = ticketRepository.findById(ticketId)
 				.orElseThrow(() -> new ResourceNotFoundException("工单不存在: " + ticketId));
 		ensureCanSuggest(currentUser, ticket);
+		log.info("开始生成AI建议: ticketId={}, operatorId={}", ticketId, currentUser.getId());
 		classifyIfNeeded(ticket);
 
 		List<SimilarTicketContext> similarTickets = similarTicketSearch.search(ticket);
 		String draft = ticketAiClient.draftReply(ticket, similarTickets);
+		log.info("AI建议生成完成: ticketId={}, 相似案例命中={}, 草稿长度={}",
+				ticketId, similarTickets.size(), draft == null ? 0 : draft.length());
 		return new AiSuggestionResponse(draft, toResponse(similarTickets));
 	}
 
@@ -73,6 +80,8 @@ public class AiSuggestionService {
 		}
 		TicketClassification classification = ticketAiClient.classify(ticket);
 		ticket.applyAiClassification(classification.category(), classification.priority());
+		log.info("AI分类完成: ticketId={}, category={}, priority={}",
+				ticket.getId(), classification.category(), classification.priority());
 	}
 
 	private List<SimilarTicketResponse> toResponse(List<SimilarTicketContext> similarTickets) {
