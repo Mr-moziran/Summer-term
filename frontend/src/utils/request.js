@@ -36,7 +36,8 @@ request.interceptors.response.use(
 
       switch (status) {
         case 401:
-          ElMessage.error('登录已过期，请重新登录')
+          console.error('认证失败:', config?.url, data?.message || error.message)
+          ElMessage.error(data?.message || '登录已过期，请重新登录')
           localStorage.removeItem('token')
           localStorage.removeItem('userInfo')
           router.push('/login')

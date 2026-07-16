@@ -72,7 +72,7 @@ public class TicketWorkflowService {
 		Reply reply = replyRepository.save(new Reply(ticket, currentUser, content.trim(), false, aiAdopted));
 		log.info("工单新增回复: ticketId={}, replyId={}, authorId={}, aiAdopted={}",
 				ticketId, reply.getId(), currentUser.getId(), aiAdopted);
-		if (!currentUser.getId().equals(ticket.getSubmitter().getId())) {
+		if (ticket.isVisibleToUser() && !currentUser.getId().equals(ticket.getSubmitter().getId())) {
 			notificationService.createNotification(
 					ticket.getSubmitter(),
 					NotificationType.NEW_REPLY,
@@ -93,11 +93,13 @@ public class TicketWorkflowService {
 		User assignee = getUser(assigneeId, "客服不存在: ");
 		ticket.assignTo(assignee);
 		log.info("工单已分配: ticketId={}, assigneeId={}", ticketId, assigneeId);
-		notificationService.createNotification(
-				ticket.getSubmitter(),
-				NotificationType.ASSIGNED,
-				ticket,
-				"您的工单「" + ticket.getTitle() + "」已分配给客服 " + assignee.getUsername());
+		if (ticket.isVisibleToUser()) {
+			notificationService.createNotification(
+					ticket.getSubmitter(),
+					NotificationType.ASSIGNED,
+					ticket,
+					"您的工单「" + ticket.getTitle() + "」已分配给客服 " + assignee.getUsername());
+		}
 		return ticket;
 	}
 
@@ -112,11 +114,13 @@ public class TicketWorkflowService {
 		ensureCanHandleTicket(currentUser, ticket);
 		ticket.changeStatus(status);
 		log.info("工单状态变更: ticketId={}, newStatus={}, operatorId={}", ticketId, status, currentUser.getId());
-		notificationService.createNotification(
-				ticket.getSubmitter(),
-				NotificationType.STATUS_CHANGE,
-				ticket,
-				"您的工单「" + ticket.getTitle() + "」状态已更新为 " + status);
+		if (ticket.isVisibleToUser()) {
+			notificationService.createNotification(
+					ticket.getSubmitter(),
+					NotificationType.STATUS_CHANGE,
+					ticket,
+					"您的工单「" + ticket.getTitle() + "」状态已更新为 " + status);
+		}
 		if (status == TicketStatus.RESOLVED) {
 			resolvedTicketIndex.index(ticket, latestReplyContent(ticket.getId()));
 			log.info("已解决工单写入向量索引: ticketId={}", ticketId);
@@ -146,7 +150,8 @@ public class TicketWorkflowService {
 			return;
 		}
 		if (currentUser.getRole() == UserRole.USER
-				&& currentUser.getId().equals(ticket.getSubmitter().getId())) {
+				&& currentUser.getId().equals(ticket.getSubmitter().getId())
+				&& ticket.isVisibleToUser()) {
 			return;
 		}
 		if (currentUser.getRole() == UserRole.AGENT

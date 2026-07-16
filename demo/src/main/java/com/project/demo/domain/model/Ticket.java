@@ -61,6 +61,9 @@ public class Ticket {
 	@Column(name = "ai_classified", nullable = false)
 	private boolean aiClassified;
 
+	@Column(name = "visible_to_user", nullable = false)
+	private boolean visibleToUser = true;
+
 	private Short rating;
 
 	@Column(name = "rating_comment", columnDefinition = "TEXT")
@@ -114,6 +117,10 @@ public class Ticket {
 		this.aiClassified = true;
 	}
 
+	public void hideFromSubmitter() {
+		this.visibleToUser = false;
+	}
+
 	@PrePersist
 	void prePersist() {
 		OffsetDateTime now = OffsetDateTime.now();
@@ -163,6 +170,10 @@ public class Ticket {
 
 	public boolean isAiClassified() {
 		return aiClassified;
+	}
+
+	public boolean isVisibleToUser() {
+		return visibleToUser;
 	}
 
 	public Short getRating() {

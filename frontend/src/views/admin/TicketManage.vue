@@ -260,7 +260,7 @@ async function handleAssign() {
 }
 
 function viewDetail(id) {
-  router.push(`/tickets/${id}`)
+  router.push(`/admin/tickets/${id}`)
 }
 
 function goDashboard() {

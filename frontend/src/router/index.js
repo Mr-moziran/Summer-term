@@ -7,6 +7,14 @@ const routes = [
     redirect: '/login'
   },
   {
+    path: '/tickets',
+    redirect: '/my-tickets'
+  },
+  {
+    path: '/admin',
+    redirect: '/admin/dashboard'
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue'),
@@ -82,6 +90,12 @@ const routes = [
     meta: { title: '工单管理', role: 'ADMIN' }
   },
   {
+    path: '/admin/tickets/:id',
+    name: 'AdminTicketDetail',
+    component: () => import('@/views/agent/TicketDetail.vue'),
+    meta: { title: '处理工单', role: 'ADMIN' }
+  },
+  {
     path: '/admin/users',
     name: 'AdminUsers',
     component: () => import('@/views/admin/UserManage.vue'),
@@ -134,9 +148,12 @@ router.beforeEach((to, from, next) => {
   }
 
   // 检查角色权限
-  if (to.meta.role && to.meta.role !== userStore.role) {
-    next('/login')
-    return
+  if (to.meta.role) {
+    const allowedRoles = Array.isArray(to.meta.role) ? to.meta.role : [to.meta.role]
+    if (!allowedRoles.includes(userStore.role)) {
+      next('/login')
+      return
+    }
   }
 
   next()

@@ -148,6 +148,9 @@ async function loadDashboard() {
     renderCategoryChart()
   } catch (error) {
     console.error('加载管理员面板失败:', error)
+    modules.value = fallbackModules
+    await nextTick()
+    renderCategoryChart()
   } finally {
     loading.value = false
   }

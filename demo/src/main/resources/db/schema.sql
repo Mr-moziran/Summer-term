@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     submitter_id BIGINT NOT NULL,
     assignee_id BIGINT,
     ai_classified BOOLEAN NOT NULL DEFAULT FALSE,
+    visible_to_user BOOLEAN NOT NULL DEFAULT TRUE,
     rating SMALLINT,
     rating_comment TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -69,6 +70,9 @@ CREATE TABLE IF NOT EXISTS notifications (
     CONSTRAINT chk_notification_type CHECK (type IN ('STATUS_CHANGE', 'NEW_REPLY', 'ASSIGNED'))
 );
 
+ALTER TABLE IF EXISTS tickets
+    ADD COLUMN IF NOT EXISTS visible_to_user BOOLEAN NOT NULL DEFAULT TRUE;
+
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
 
@@ -108,6 +112,7 @@ COMMENT ON COLUMN tickets.status IS '工单状态：PENDING 待分配，ASSIGNED
 COMMENT ON COLUMN tickets.submitter_id IS '提交工单的用户 ID';
 COMMENT ON COLUMN tickets.assignee_id IS '负责处理工单的客服用户 ID';
 COMMENT ON COLUMN tickets.ai_classified IS '是否已完成 AI 自动分类和优先级判断';
+COMMENT ON COLUMN tickets.visible_to_user IS '工单是否对提交用户可见；AI 转人工内部接管工单为 FALSE';
 COMMENT ON COLUMN tickets.rating IS '用户关闭工单后的评分，1 到 5 分';
 COMMENT ON COLUMN tickets.rating_comment IS '用户评价文字';
 COMMENT ON COLUMN tickets.created_at IS '工单创建时间';

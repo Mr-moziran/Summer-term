@@ -13,7 +13,7 @@
         <div v-if="messages.length === 0" class="empty-tip">
           <el-icon :size="48"><ChatDotRound /></el-icon>
           <p>您好，我是智能客服助手。请描述您遇到的问题，我会先尝试为您解答。</p>
-          <p class="hint">如果我无法解决，可以输入“转人工”为您创建人工工单。</p>
+          <p class="hint">如果我无法解决，可以输入“转人工”，我会为您转接人工客服。</p>
         </div>
 
         <div
@@ -33,16 +33,8 @@
               <el-alert type="warning" :closable="false" show-icon>
                 <template #title>已为您转接人工客服</template>
                 <div class="escalated-info">
-                  已创建工单 <strong>#{{ msg.ticket?.id }}</strong>：{{ msg.ticket?.title }}
+                  {{ msg.answer || '即将为您转接人工客服，请保持当前页面，稍后将由人工客服继续处理。' }}
                 </div>
-                <el-button
-                  type="primary"
-                  size="small"
-                  class="mt-10"
-                  @click="viewTicket(msg.ticket?.id)"
-                >
-                  查看工单
-                </el-button>
               </el-alert>
             </template>
 
@@ -105,17 +97,17 @@
           v-model="question"
           type="textarea"
           :rows="3"
-          placeholder="请输入您的问题，按 Enter 发送（Shift+Enter 换行）"
           maxlength="1000"
           show-word-limit
-          :disabled="loading"
+          :disabled="loading || humanHandoffPending"
+          :placeholder="humanHandoffPending ? '人工客服接管中，请保持当前页面等待' : '请输入您的问题，按 Enter 发送（Shift+Enter 换行）'"
           @keydown.enter.exact.prevent="handleSend"
         />
         <div class="input-buttons">
           <el-button
             type="primary"
             :loading="loading"
-            :disabled="!question.trim()"
+            :disabled="humanHandoffPending || !question.trim()"
             @click="handleSend"
           >
             发送
@@ -136,6 +128,7 @@ import { ASK_AI_RESULT_TYPE } from '@/utils/constants'
 const router = useRouter()
 const question = ref('')
 const loading = ref(false)
+const humanHandoffPending = ref(false)
 const messages = ref([])
 const chatWindowRef = ref()
 
@@ -150,7 +143,7 @@ async function handleSend() {
 
 /**
  * 用户点击“转人工”时，直接以“转人工”作为问题发送。
- * 后端 AskAiService 会识别转人工意图并创建工单。
+ * 后端 AskAiService 会识别转人工意图并进入人工接管流程。
  */
 async function escalateToHuman() {
   await send('转人工')
@@ -170,12 +163,12 @@ async function send(q) {
       answer: data.answer,
       warning: data.warning,
       canEscalate: data.canEscalate,
-      references: data.references || [],
-      ticket: data.ticket
+      references: data.references || []
     })
 
     if (data.resultType === ASK_AI_RESULT_TYPE.ESCALATED) {
-      ElMessage.success('已为您创建人工工单')
+      humanHandoffPending.value = true
+      ElMessage.success('已为您转接人工客服')
     }
   } catch (error) {
     messages.value.push({
@@ -195,10 +188,6 @@ function scrollToBottom() {
     const el = chatWindowRef.value
     if (el) el.scrollTop = el.scrollHeight
   })
-}
-
-function viewTicket(id) {
-  if (id) router.push(`/tickets/${id}`)
 }
 
 function goBack() {

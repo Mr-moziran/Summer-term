@@ -5,7 +5,6 @@ import com.project.demo.domain.model.Ticket;
 import com.project.demo.domain.model.User;
 import com.project.demo.domain.dto.request.EscalationRequest;
 import com.project.demo.domain.dto.response.AskAiResponse;
-import com.project.demo.domain.dto.response.EscalatedTicketResponse;
 import com.project.demo.domain.dto.response.KnowledgeReferenceResponse;
 import com.project.demo.service.ticket.TicketService;
 import java.util.List;
@@ -17,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 用户自助问答编排服务。
  *
- * <p>服务层统一控制知识库阈值、转人工判定和工单创建，避免模型直接决定提交人、状态等敏感字段。</p>
+ * <p>服务层统一控制知识库阈值和转人工判定，内部创建客服可处理、用户不可见的接管工单。</p>
  */
 @Service
 public class AskAiService {
@@ -26,6 +25,9 @@ public class AskAiService {
 
 	private static final String MEDIUM_CONFIDENCE_WARNING =
 			"该回答基于现有知识库资料生成，可能不完整。如未解决，可输入“转人工”继续处理。";
+
+	private static final String HUMAN_HANDOFF_MESSAGE =
+			"即将为您转接人工客服，请保持当前页面，稍后将由人工客服继续处理。";
 
 	private final AskIntentClassifier askIntentClassifier;
 
@@ -120,15 +122,15 @@ public class AskAiService {
 		String summary = firstNonBlank(escalationRequest.questionSummary(), summarize(question));
 		String title = abbreviate("AI未能解答：" + summary, 200);
 		String description = buildEscalationDescription(question, documents, escalationRequest);
-		Ticket ticket = ticketService.createTicket(currentUser, currentUser.getId(), title, description);
-		log.info("自助问答转人工: userId={}, 生成工单ticketId={}", currentUser.getId(), ticket.getId());
+		Ticket ticket = ticketService.createInternalTicket(currentUser, currentUser.getId(), title, description);
+		log.info("自助问答转人工: userId={}, 生成内部工单ticketId={}", currentUser.getId(), ticket.getId());
 		return new AskAiResponse(
 				AskAiResultType.ESCALATED,
-				null,
+				HUMAN_HANDOFF_MESSAGE,
 				null,
 				false,
 				references(documents),
-				EscalatedTicketResponse.from(ticket));
+				null);
 	}
 
 	private String buildEscalationDescription(

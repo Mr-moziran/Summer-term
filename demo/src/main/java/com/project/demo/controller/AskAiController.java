@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 用户自助问答接口。
  *
- * <p>普通登录用户可通过该入口先查询知识库，无法解决或明确要求人工时自动转人工工单。</p>
+ * <p>普通登录用户可通过该入口先查询知识库，无法解决或明确要求人工时进入人工接管流程。</p>
  */
 @RestController
 @RequestMapping("/api/ai/ask")

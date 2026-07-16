@@ -46,14 +46,28 @@ public class TicketService {
 	 */
 	@Transactional
 	public Ticket createTicket(User currentUser, Long submitterId, String title, String description) {
+		return createTicket(currentUser, submitterId, title, description, true);
+	}
+
+	@Transactional
+	public Ticket createInternalTicket(User currentUser, Long submitterId, String title, String description) {
+		return createTicket(currentUser, submitterId, title, description, false);
+	}
+
+	private Ticket createTicket(User currentUser, Long submitterId, String title, String description, boolean visibleToUser) {
 		if (currentUser.getRole() == UserRole.USER && !currentUser.getId().equals(submitterId)) {
 			throw new AccessDeniedException("权限不足");
 		}
 		User submitter = userRepository.findById(submitterId)
 				.orElseThrow(() -> new ResourceNotFoundException("提交人不存在: " + submitterId));
-		Ticket ticket = ticketRepository.save(new Ticket(title.trim(), description.trim(), submitter));
-		log.info("工单创建成功: ticketId={}, submitterId={}", ticket.getId(), submitterId);
-		return ticket;
+		Ticket ticket = new Ticket(title.trim(), description.trim(), submitter);
+		if (!visibleToUser) {
+			ticket.hideFromSubmitter();
+		}
+		Ticket savedTicket = ticketRepository.save(ticket);
+		log.info("工单创建成功: ticketId={}, submitterId={}, visibleToUser={}",
+				savedTicket.getId(), submitterId, savedTicket.isVisibleToUser());
+		return savedTicket;
 	}
 
 	@Transactional(readOnly = true)
@@ -79,6 +93,7 @@ public class TicketService {
 			Pageable pageable) {
 		Long effectiveSubmitterId = submitterId;
 		Long effectiveAssigneeId = assigneeId;
+		boolean visibleToUserOnly = false;
 		if (currentUser.getRole() == UserRole.USER) {
 			if (submitterId != null && !currentUser.getId().equals(submitterId)) {
 				throw new AccessDeniedException("权限不足");
@@ -87,6 +102,7 @@ public class TicketService {
 				throw new AccessDeniedException("权限不足");
 			}
 			effectiveSubmitterId = currentUser.getId();
+			visibleToUserOnly = true;
 		}
 		else if (currentUser.getRole() == UserRole.AGENT) {
 			if (assigneeId != null && !currentUser.getId().equals(assigneeId)) {
@@ -98,7 +114,7 @@ public class TicketService {
 			effectiveAssigneeId = currentUser.getId();
 		}
 		return ticketRepository.findAll(
-				buildSpecification(status, category, effectiveSubmitterId, effectiveAssigneeId),
+				buildSpecification(status, category, effectiveSubmitterId, effectiveAssigneeId, visibleToUserOnly),
 				pageable);
 	}
 
@@ -106,7 +122,7 @@ public class TicketService {
 	public Ticket rateTicket(User currentUser, Long ticketId, Short rating, String comment) {
 		Ticket ticket = ticketRepository.findById(ticketId)
 				.orElseThrow(() -> new ResourceNotFoundException("工单不存在: " + ticketId));
-		if (!currentUser.getId().equals(ticket.getSubmitter().getId())) {
+		if (!currentUser.getId().equals(ticket.getSubmitter().getId()) || !ticket.isVisibleToUser()) {
 			throw new AccessDeniedException("权限不足");
 		}
 		ticket.rate(rating, normalizeComment(comment));
@@ -126,7 +142,8 @@ public class TicketService {
 			return;
 		}
 		if (currentUser.getRole() == UserRole.USER
-				&& currentUser.getId().equals(ticket.getSubmitter().getId())) {
+				&& currentUser.getId().equals(ticket.getSubmitter().getId())
+				&& ticket.isVisibleToUser()) {
 			return;
 		}
 		if (currentUser.getRole() == UserRole.AGENT
@@ -146,7 +163,8 @@ public class TicketService {
 			TicketStatus status,
 			TicketCategory category,
 			Long submitterId,
-			Long assigneeId) {
+			Long assigneeId,
+			boolean visibleToUserOnly) {
 		return (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 			if (status != null) {
@@ -157,6 +175,9 @@ public class TicketService {
 			}
 			if (submitterId != null) {
 				predicates.add(criteriaBuilder.equal(root.get("submitter").get("id"), submitterId));
+			}
+			if (visibleToUserOnly) {
+				predicates.add(criteriaBuilder.isTrue(root.get("visibleToUser")));
 			}
 			if (assigneeId != null) {
 				predicates.add(criteriaBuilder.equal(root.get("assignee").get("id"), assigneeId));

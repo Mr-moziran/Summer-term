@@ -41,7 +41,7 @@ export const NOTIFICATION_TYPE = {
 export const ASK_AI_RESULT_TYPE = {
   ANSWERED: 'ANSWERED',                       // 高置信，直接回答
   ANSWERED_WITH_WARNING: 'ANSWERED_WITH_WARNING', // 中置信，回答但带提示
-  ESCALATED: 'ESCALATED'                      // 已转人工，生成工单
+  ESCALATED: 'ESCALATED'                      // 已转人工，等待客服接管
 }
 
 // WebSocket URL（STOMP 端点，对应后端 registerStompEndpoints("/ws/notifications")）

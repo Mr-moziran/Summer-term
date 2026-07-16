@@ -50,7 +50,7 @@ public class AuthResponse {
 		return switch (role) {
 			case ADMIN -> "/admin/dashboard";
 			case AGENT -> "/agent/tickets";
-			case USER -> "/tickets";
+			case USER -> "/my-tickets";
 		};
 	}
 }
