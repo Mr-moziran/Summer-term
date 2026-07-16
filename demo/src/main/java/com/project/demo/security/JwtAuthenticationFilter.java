@@ -1,9 +1,9 @@
 package com.project.demo.security;
 
-import com.project.demo.common.dto.ApiErrorResponse;
-import com.project.demo.user.User;
-import com.project.demo.user.UserStatus;
-import com.project.demo.user.UserRepository;
+import com.project.demo.domain.dto.response.ApiErrorResponse;
+import com.project.demo.domain.model.User;
+import com.project.demo.domain.enums.UserStatus;
+import com.project.demo.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

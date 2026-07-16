@@ -1,8 +1,8 @@
 package com.project.demo.websocket;
 
-import com.project.demo.user.User;
-import com.project.demo.user.UserStatus;
-import com.project.demo.user.UserRepository;
+import com.project.demo.domain.model.User;
+import com.project.demo.domain.enums.UserStatus;
+import com.project.demo.repository.UserRepository;
 import com.project.demo.security.JwtService;
 import java.util.Map;
 import org.springframework.http.HttpStatus;

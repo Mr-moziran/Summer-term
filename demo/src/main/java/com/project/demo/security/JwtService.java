@@ -1,6 +1,6 @@
 package com.project.demo.security;
 
-import com.project.demo.user.User;
+import com.project.demo.domain.model.User;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;

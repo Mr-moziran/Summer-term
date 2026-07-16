@@ -1,8 +1,8 @@
 package com.project.demo.security;
 
-import com.project.demo.user.User;
-import com.project.demo.common.exception.ResourceNotFoundException;
-import com.project.demo.user.UserRepository;
+import com.project.demo.domain.model.User;
+import com.project.demo.exception.ResourceNotFoundException;
+import com.project.demo.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
