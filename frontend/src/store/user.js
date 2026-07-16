@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { login, register } from '@/api/auth'
 import router from '@/router'
+import { useNotificationStore } from './notification'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
@@ -41,6 +42,11 @@ export const useUserStore = defineStore('user', () => {
   }
 
   function logout() {
+    // 退出前断开 WebSocket 并清空通知状态
+    const notificationStore = useNotificationStore()
+    notificationStore.disconnect()
+    notificationStore.clearAll()
+
     token.value = ''
     userInfo.value = null
     localStorage.removeItem('token')

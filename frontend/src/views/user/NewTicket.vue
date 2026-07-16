@@ -51,8 +51,10 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { createTicket } from '@/api/ticket'
+import { useUserStore } from '@/store/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const formRef = ref()
 const loading = ref(false)
 
@@ -80,7 +82,7 @@ async function handleSubmit() {
 
     loading.value = true
     try {
-      await createTicket(form)
+      await createTicket({ ...form, submitterId: userStore.userId })
       ElMessage.success('工单提交成功')
       router.push('/my-tickets')
     } catch (error) {

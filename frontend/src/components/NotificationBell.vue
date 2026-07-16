@@ -14,14 +14,14 @@
         <div
           v-for="notification in notificationStore.notifications"
           :key="notification.id"
-          :class="['notification-item', { unread: !notification.isRead }]"
+          :class="['notification-item', { unread: !notification.read }]"
           @click="handleNotificationClick(notification)"
         >
           <div class="notification-header">
             <el-tag size="small" :type="getNotificationType(notification.type)">
               {{ getNotificationTypeLabel(notification.type) }}
             </el-tag>
-            <span class="notification-time">{{ formatRelativeTime(notification.timestamp) }}</span>
+            <span class="notification-time">{{ formatRelativeTime(notification.createdAt) }}</span>
           </div>
           <div class="notification-message">{{ notification.message }}</div>
         </div>

@@ -4,10 +4,16 @@
       <template #header>
         <div class="flex-between">
           <h2>我的工单</h2>
-          <el-button type="primary" @click="goToNewTicket">
-            <el-icon><Plus /></el-icon>
-            提交工单
-          </el-button>
+          <div>
+            <el-button @click="goToAskAi">
+              <el-icon><ChatDotRound /></el-icon>
+              智能助手
+            </el-button>
+            <el-button type="primary" @click="goToNewTicket">
+              <el-icon><Plus /></el-icon>
+              提交工单
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -162,6 +168,10 @@ function viewDetail(id) {
 
 function goToNewTicket() {
   router.push('/tickets/new')
+}
+
+function goToAskAi() {
+  router.push('/ask-ai')
 }
 </script>
 

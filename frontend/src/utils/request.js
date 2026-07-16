@@ -4,7 +4,11 @@ import router from '@/router'
 
 const request = axios.create({
   baseURL: '/api',
-  timeout: 30000
+  timeout: 30000,
+  // 数组参数序列化为重复 key（sort=a&sort=b），以适配 Spring 的多字段排序
+  paramsSerializer: {
+    indexes: null
+  }
 })
 
 // 请求拦截器

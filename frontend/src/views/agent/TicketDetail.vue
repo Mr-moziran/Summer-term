@@ -23,7 +23,7 @@
               {{ ticket.id }}
             </el-descriptions-item>
             <el-descriptions-item label="提交人">
-              {{ ticket.submitterName }}
+              {{ ticket.submitterUsername }}
             </el-descriptions-item>
             <el-descriptions-item label="类型">
               <el-tag v-if="ticket.category" :color="TICKET_CATEGORY[ticket.category]?.color" effect="light">
@@ -54,7 +54,8 @@
               >
                 <div class="reply-item">
                   <div class="reply-header">
-                    <span class="author">{{ reply.authorName }}</span>
+                    <span class="author">{{ reply.authorUsername }}</span>
+                    <el-tag v-if="reply.aiDraft" size="small" type="info">AI草稿</el-tag>
                     <el-tag v-if="reply.aiAdopted" size="small" type="success">AI采纳</el-tag>
                   </div>
                   <div class="reply-content">{{ reply.content }}</div>
@@ -104,7 +105,7 @@
                 <div class="similar-header">
                   <span class="ticket-id">#{{ similar.ticketId }}</span>
                   <el-tag size="small" type="info">
-                    相似度 {{ (similar.similarity * 100).toFixed(0) }}%
+                    相似度 {{ (similar.score * 100).toFixed(0) }}%
                   </el-tag>
                 </div>
                 <div class="similar-title">{{ similar.title }}</div>
@@ -166,9 +167,11 @@ import { getTicketDetail, getTicketReplies, replyTicket, updateTicketStatus } fr
 import { getAiSuggestion } from '@/api/ai'
 import { TICKET_STATUS, TICKET_CATEGORY, TICKET_PRIORITY } from '@/utils/constants'
 import { formatDateTime } from '@/utils/format'
+import { useUserStore } from '@/store/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const loading = ref(false)
 const aiLoading = ref(false)
@@ -212,11 +215,9 @@ async function loadAiSuggestion() {
     const data = await getAiSuggestion(ticket.value.id)
     aiSuggestion.value = data
 
-    // 更新工单的分类和优先级信息（如果AI已分类）
-    if (data.category) {
-      ticket.value.category = data.category
-      ticket.value.priority = data.priority
-    }
+    // AI 建议接口内部会同步完成分类，重新拉取工单以获取最新的分类和优先级
+    const refreshed = await getTicketDetail(ticket.value.id)
+    ticket.value = refreshed
   } catch (error) {
     ElMessage.error('获取AI建议失败')
     console.error(error)
@@ -240,6 +241,7 @@ async function handleReply() {
   replyLoading.value = true
   try {
     await replyTicket(ticket.value.id, {
+      authorId: userStore.userId,
       content: replyContent.value,
       aiAdopted: aiAdopted.value
     })

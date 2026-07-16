@@ -51,7 +51,7 @@
       >
         <el-table-column prop="id" label="工单ID" width="80" />
         <el-table-column prop="title" label="标题" min-width="200" />
-        <el-table-column prop="submitterName" label="提交人" width="120" />
+        <el-table-column prop="submitterUsername" label="提交人" width="120" />
         <el-table-column prop="category" label="类型" width="120">
           <template #default="{ row }">
             <el-tag v-if="row.category" :color="TICKET_CATEGORY[row.category]?.color" effect="light">
@@ -138,7 +138,8 @@ async function loadData() {
       ...queryForm,
       page: pagination.page - 1,
       size: pagination.size,
-      sort: 'priority,desc;createdAt,asc' // 按优先级降序，创建时间升序
+      // 多字段排序：Spring 接受重复的 sort 参数，交由 axios 序列化为 sort=a&sort=b
+      sort: ['priority,desc', 'createdAt,asc']
     }
     const data = await getTickets(params)
     tableData.value = data.content || []

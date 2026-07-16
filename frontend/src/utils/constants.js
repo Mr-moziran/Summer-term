@@ -37,7 +37,17 @@ export const NOTIFICATION_TYPE = {
   ASSIGNED: '工单分配'
 }
 
-// WebSocket URL
+// 自助问答结果类型（对应后端 AskAiResultType）
+export const ASK_AI_RESULT_TYPE = {
+  ANSWERED: 'ANSWERED',                       // 高置信，直接回答
+  ANSWERED_WITH_WARNING: 'ANSWERED_WITH_WARNING', // 中置信，回答但带提示
+  ESCALATED: 'ESCALATED'                      // 已转人工，生成工单
+}
+
+// WebSocket URL（STOMP 端点，对应后端 registerStompEndpoints("/ws/notifications")）
 export const WS_URL = import.meta.env.MODE === 'production'
   ? 'wss://your-domain.com/ws/notifications'
   : 'ws://localhost:8080/ws/notifications'
+
+// STOMP 订阅目的地（对应后端 convertAndSendToUser + "/queue/notifications" + userDestinationPrefix "/user"）
+export const NOTIFICATION_DESTINATION = '/user/queue/notifications'

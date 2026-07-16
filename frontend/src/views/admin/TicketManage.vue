@@ -52,7 +52,7 @@
       >
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="标题" min-width="200" />
-        <el-table-column prop="submitterName" label="提交人" width="120" />
+        <el-table-column prop="submitterUsername" label="提交人" width="120" />
         <el-table-column prop="category" label="类型" width="120">
           <template #default="{ row }">
             <el-tag v-if="row.category" :color="TICKET_CATEGORY[row.category]?.color" effect="light">
@@ -76,9 +76,9 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="assigneeName" label="负责客服" width="120">
+        <el-table-column prop="assigneeUsername" label="负责客服" width="120">
           <template #default="{ row }">
-            <span v-if="row.assigneeName">{{ row.assigneeName }}</span>
+            <span v-if="row.assigneeUsername">{{ row.assigneeUsername }}</span>
             <span v-else class="text-muted">未分配</span>
           </template>
         </el-table-column>

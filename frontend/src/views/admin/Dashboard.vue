@@ -44,7 +44,7 @@
           </div>
           <div class="card-content">
             <div class="card-title">AI 采纳率</div>
-            <div class="card-value">{{ (stats.aiAdoptionRate * 100).toFixed(1) || 0 }}%</div>
+            <div class="card-value">{{ ((stats.aiAdoptionRate || 0) * 100).toFixed(1) }}%</div>
           </div>
         </el-card>
       </el-col>
@@ -52,20 +52,12 @@
 
     <!-- 图表区域 -->
     <el-row :gutter="20" class="charts-row">
-      <el-col :span="12">
+      <el-col :span="24">
         <el-card v-loading="loading" class="chart-card">
           <template #header>
             <h3>工单类型分布</h3>
           </template>
           <div ref="categoryChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card v-loading="loading" class="chart-card">
-          <template #header>
-            <h3>工单状态分布</h3>
-          </template>
-          <div ref="statusChartRef" class="chart-container"></div>
         </el-card>
       </el-col>
     </el-row>
@@ -81,9 +73,7 @@ import { TICKET_CATEGORY } from '@/utils/constants'
 const loading = ref(false)
 const stats = ref({})
 const categoryChartRef = ref()
-const statusChartRef = ref()
 let categoryChart = null
-let statusChart = null
 
 onMounted(() => {
   loadData()
@@ -92,7 +82,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (categoryChart) categoryChart.dispose()
-  if (statusChart) statusChart.dispose()
   window.removeEventListener('resize', handleResize)
 })
 
@@ -111,7 +100,6 @@ async function loadData() {
 
 function renderCharts() {
   renderCategoryChart()
-  renderStatusChart()
 }
 
 function renderCategoryChart() {
@@ -166,55 +154,8 @@ function renderCategoryChart() {
   categoryChart.setOption(option)
 }
 
-function renderStatusChart() {
-  if (!statusChartRef.value) return
-
-  if (!statusChart) {
-    statusChart = echarts.init(statusChartRef.value)
-  }
-
-  // 模拟状态分布数据（实际应该从API获取）
-  const data = [
-    { name: '待处理', value: stats.value.pendingCount || 0 },
-    { name: '已分配', value: 15 },
-    { name: '处理中', value: 23 },
-    { name: '已解决', value: 45 },
-    { name: '已关闭', value: 30 }
-  ]
-
-  const option = {
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)'
-    },
-    legend: {
-      orient: 'vertical',
-      right: 'right'
-    },
-    series: [
-      {
-        name: '工单状态',
-        type: 'pie',
-        radius: '70%',
-        center: ['40%', '50%'],
-        data: data,
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
-        }
-      }
-    ]
-  }
-
-  statusChart.setOption(option)
-}
-
 function handleResize() {
   categoryChart?.resize()
-  statusChart?.resize()
 }
 </script>
 

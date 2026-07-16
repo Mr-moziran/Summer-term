@@ -60,8 +60,8 @@
             >
               <el-card>
                 <div class="reply-header">
-                  <span class="author-name">{{ reply.authorName }}</span>
-                  <el-tag v-if="reply.isAiDraft" size="small" type="info">AI草稿</el-tag>
+                  <span class="author-name">{{ reply.authorUsername }}</span>
+                  <el-tag v-if="reply.aiDraft" size="small" type="info">AI草稿</el-tag>
                   <el-tag v-if="reply.aiAdopted" size="small" type="success">AI采纳</el-tag>
                 </div>
                 <div class="reply-content">{{ reply.content }}</div>

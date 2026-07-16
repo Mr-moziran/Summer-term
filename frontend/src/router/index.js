@@ -32,6 +32,12 @@ const routes = [
     meta: { title: '提交工单', role: 'USER' }
   },
   {
+    path: '/ask-ai',
+    name: 'AskAi',
+    component: () => import('@/views/user/AskAi.vue'),
+    meta: { title: '智能助手', role: 'USER' }
+  },
+  {
     path: '/tickets/:id',
     name: 'TicketDetail',
     component: () => import('@/views/user/TicketDetail.vue'),
