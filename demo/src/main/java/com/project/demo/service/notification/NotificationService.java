@@ -6,6 +6,8 @@ import com.project.demo.domain.model.Ticket;
 import com.project.demo.domain.model.User;
 import com.project.demo.exception.ResourceNotFoundException;
 import com.project.demo.repository.NotificationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class NotificationService {
+
+	private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
 	private final NotificationRepository notificationRepository;
 
@@ -37,6 +41,8 @@ public class NotificationService {
 	@Transactional
 	public Notification createNotification(User user, NotificationType type, Ticket ticket, String message) {
 		Notification notification = notificationRepository.save(new Notification(user, type, ticket, message));
+		log.info("通知已创建: notificationId={}, userId={}, type={}, ticketId={}",
+				notification.getId(), user.getId(), type, ticket.getId());
 		notificationPushService.push(notification);
 		return notification;
 	}
@@ -62,6 +68,7 @@ public class NotificationService {
 			throw new AccessDeniedException("权限不足");
 		}
 		notification.markRead();
+		log.info("通知已读: notificationId={}, userId={}", notificationId, currentUser.getId());
 		return notification;
 	}
 }

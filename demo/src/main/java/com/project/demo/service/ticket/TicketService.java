@@ -110,6 +110,7 @@ public class TicketService {
 			throw new AccessDeniedException("权限不足");
 		}
 		ticket.rate(rating, normalizeComment(comment));
+		log.info("工单已评价: ticketId={}, userId={}, rating={}", ticketId, currentUser.getId(), rating);
 		return ticket;
 	}
 

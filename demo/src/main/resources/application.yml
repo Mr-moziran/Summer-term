@@ -1,17 +1,24 @@
 spring:
   sql:
     init:
-      mode: always
+      mode: never
       schema-locations: classpath:db/schema.sql
       data-locations: classpath:db/seed.sql
   datasource:
     url: jdbc:postgresql://localhost:5432/ticket_system
     username: postgres
     password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: TicketSystemHikariPool
+      auto-commit: true
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+      minimum-idle: 5
+      maximum-pool-size: 10
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
   ai:
     vectorstore:
       pgvector:
@@ -53,3 +60,12 @@ app:
   jwt:
     secret: ${JWT_SECRET:dev-only-change-this-secret-at-least-32-bytes}
     expiration-minutes: 120
+
+logging:
+  level:
+    org.hibernate.SQL: warn
+    org.hibernate.orm.jdbc.bind: warn
+    org.hibernate.orm.connections.pooling: warn
+    org.springframework.jdbc.core: warn
+    org.springframework.orm.jpa: warn
+    org.springframework.ai.vectorstore.pgvector: warn

@@ -8,6 +8,8 @@ import com.project.demo.repository.UserRepository;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class AdminUserService {
+
+	private static final Logger log = LoggerFactory.getLogger(AdminUserService.class);
 
 	private final UserRepository userRepository;
 
@@ -38,6 +42,7 @@ public class AdminUserService {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("用户不存在: " + userId));
 		user.changeStatus(status);
+		log.info("用户状态已变更: userId={}, role={}, newStatus={}", userId, user.getRole(), status);
 		return user;
 	}
 
