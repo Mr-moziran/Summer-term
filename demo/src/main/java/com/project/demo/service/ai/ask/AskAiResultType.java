@@ -9,5 +9,7 @@ public enum AskAiResultType {
 
 	ANSWERED_WITH_WARNING,
 
+	OUT_OF_SCOPE,
+
 	ESCALATED
 }

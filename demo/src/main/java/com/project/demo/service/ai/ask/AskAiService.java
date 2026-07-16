@@ -27,9 +27,6 @@ public class AskAiService {
 	private static final String MEDIUM_CONFIDENCE_WARNING =
 			"该回答基于现有知识库资料生成，可能不完整。如未解决，可输入“转人工”继续处理。";
 
-	private static final String OUT_OF_SCOPE_ANSWER =
-			"我们目前不能回答此类问题，请问还有其他业务相关问题需要帮助吗？";
-
 	private final AskIntentClassifier askIntentClassifier;
 
 	private final KnowledgeSearch knowledgeSearch;
@@ -40,22 +37,30 @@ public class AskAiService {
 
 	private final AskAiProperties properties;
 
+	private final BusinessScopeChecker businessScopeChecker;
+
 	public AskAiService(
 			AskIntentClassifier askIntentClassifier,
 			KnowledgeSearch knowledgeSearch,
 			AskAiClient askAiClient,
 			TicketService ticketService,
-			AskAiProperties properties) {
+			AskAiProperties properties,
+			BusinessScopeChecker businessScopeChecker) {
 		this.askIntentClassifier = askIntentClassifier;
 		this.knowledgeSearch = knowledgeSearch;
 		this.askAiClient = askAiClient;
 		this.ticketService = ticketService;
 		this.properties = properties;
+		this.businessScopeChecker = businessScopeChecker;
 	}
 
 	@Transactional
 	public AskAiResponse ask(User currentUser, String question) {
 		String normalizedQuestion = normalizeQuestion(question);
+		if (businessScopeChecker.isOutOfScope(normalizedQuestion)) {
+			log.info("用户自助问答被本地范围规则拦截: userId={}", currentUser.getId());
+			return outOfScope();
+		}
 		AskIntent intent = askIntentClassifier.classify(normalizedQuestion);
 		if (intent == AskIntent.UNRELATED) {
 			log.info("用户自助问答被意图识别拦截: userId={}, intent={}", currentUser.getId(), intent);
@@ -90,7 +95,13 @@ public class AskAiService {
 	}
 
 	private AskAiResponse outOfScope() {
-		return new AskAiResponse(AskAiResultType.ANSWERED, OUT_OF_SCOPE_ANSWER, null, false, List.of(), null);
+		return new AskAiResponse(
+				AskAiResultType.OUT_OF_SCOPE,
+				"我们目前不能回答此类问题，请问还有其他业务相关问题需要帮助吗？",
+				null,
+				false,
+				List.of(),
+				null);
 	}
 
 	private AskAiResponse answered(

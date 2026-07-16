@@ -1,0 +1,153 @@
+[
+  {
+    "id": "KB-EVAL-001",
+    "question": "退款申请后一般多久能到账？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "退款未到账",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-002",
+    "question": "怎么取消下个月自动续费？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "如何关闭自动续费",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-003",
+    "question": "升级套餐是立刻生效吗？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "升级套餐何时生效以及如何计费",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-004",
+    "question": "我想把专业版降到标准版什么时候变更？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "降级套餐何时生效",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-005",
+    "question": "支付扣钱了但是我的套餐还是没开通",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "已扣款但订单没有生效",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-006",
+    "question": "同一个订单被扣了两次钱怎么办？",
+    "expectedResultType": "ESCALATED",
+    "expectedReferenceTitle": "发现重复扣费如何处理",
+    "mustCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-007",
+    "question": "附件最多可以传多大？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "附件支持哪些格式和大小",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-008",
+    "question": "上传 PDF 总是失败，文件大小有限制吗？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "附件支持哪些格式和大小",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-009",
+    "question": "我没有下载工单报表的按钮",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "为什么没有导出数据的权限",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-010",
+    "question": "导出一年的数据要等多久？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "大范围导出数据需要多久",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-011",
+    "question": "我被管理员加了权限但还是看不到工单",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "权限变更后为什么仍然无法操作",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-012",
+    "question": "订阅取消后以前的工单会保存多长时间？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "取消订阅后数据会保留多久",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-013",
+    "question": "忘记密码后一直收不到重置邮件",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "未收到密码重置邮件",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-014",
+    "question": "今天北京会下雨吗？",
+    "expectedResultType": "OUT_OF_SCOPE",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-015",
+    "question": "帮我写一首关于春天的诗",
+    "expectedResultType": "OUT_OF_SCOPE",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-016",
+    "question": "我们需要接入一个系统暂不支持的第三方接口，怎么配置？",
+    "expectedResultType": "ESCALATED",
+    "mustCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-017",
+    "question": "密码重置邮件里的链接过期了怎么办？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "密码重置链接过期怎么办",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-018",
+    "question": "我的页面打开后是空白的",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "页面白屏或出现系统错误怎么办",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-019",
+    "question": "导出的 Excel 无法打开",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "导出的文件无法打开或内容乱码",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-020",
+    "question": "我的工单两天了没人回复，怎么催？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "如何催办长时间未处理的工单",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-021",
+    "question": "已经关闭的工单还能重新处理吗？",
+    "expectedResultType": "ANSWERED_WITH_WARNING",
+    "expectedReferenceTitle": "已关闭的工单可以重新打开吗",
+    "mustNotCreateTicket": true
+  },
+  {
+    "id": "KB-EVAL-022",
+    "question": "我怀疑有人登录了我的账号",
+    "expectedResultType": "ESCALATED",
+    "expectedReferenceTitle": "怀疑账号被他人登录怎么办",
+    "mustCreateTicket": true
+  }
+]

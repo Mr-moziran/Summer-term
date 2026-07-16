@@ -36,3 +36,7 @@ build/
 .codegraph/
 .env.properties
 
+# 第三方原始数据仅用于本地清洗，不提交到仓库
+data/raw/
+data/processed/
+

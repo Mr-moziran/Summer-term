@@ -26,7 +26,7 @@ public class PgVectorResolvedTicketIndex implements ResolvedTicketIndex {
 	@Override
 	public void index(Ticket ticket, String solution) {
 		vectorStore.add(List.of(new Document(documentText(ticket, solution), Map.of(
-				"type", "resolved_ticket",
+				"documentType", "resolved-ticket",
 				"ticketId", ticket.getId(),
 				"title", ticket.getTitle(),
 				"solution", solution == null ? "" : solution))));
