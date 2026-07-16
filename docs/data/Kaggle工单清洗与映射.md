@@ -41,4 +41,4 @@
 
 ## 已采用的案例
 
-`demo/src/main/resources/db/kaggle-curated-tickets.sql` 已收录 25 条按上述规则重写的中文 SaaS 历史解决案例及客服回复。这些案例只用于工单列表演示和相似工单检索；FAQ 仍以 `knowledge-base.json` 为唯一标准答案来源。
+`demo/src/main/resources/db/kaggle-curated-tickets.sql` 已收录 50 条按上述规则重写的中文 SaaS 历史解决案例及对应客服回复，分两批覆盖技术故障、账单处理、权限和产品咨询场景。这些案例只用于工单列表演示和相似工单检索；FAQ 仍以 `knowledge-base.json` 为唯一标准答案来源。
