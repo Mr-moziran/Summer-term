@@ -45,18 +45,18 @@ spring:
 
 app:
   ai:
-    provider: local
+    provider: deepseek
     ask:
-      provider: local
+      provider: deepseek
       high-threshold: 0.82
       medium-threshold: 0.70
       top-k: 3
       knowledge:
-        provider: none
+        provider: pgvector
     similarity:
-      provider: none
+      provider: pgvector
     index:
-      provider: none
+      provider: pgvector
   jwt:
     secret: ${JWT_SECRET:dev-only-change-this-secret-at-least-32-bytes}
     expiration-minutes: 120
