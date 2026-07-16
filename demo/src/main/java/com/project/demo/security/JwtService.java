@@ -69,6 +69,18 @@ public class JwtService {
 				extractString(payload, "role"));
 	}
 
+	/**
+	 * 解密 token 但不检查签名和过期（用于已通过校验的 token 提取过期时间）。
+	 */
+	public long extractExpiresAt(String token) {
+		String[] parts = token.split("\\.");
+		if (parts.length != 3) {
+			return 0;
+		}
+		String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+		return Long.parseLong(extractNumber(payload, "exp"));
+	}
+
 	private String sign(String value) {
 		try {
 			Mac mac = Mac.getInstance("HmacSHA256");

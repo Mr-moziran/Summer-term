@@ -33,10 +33,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final ObjectMapper objectMapper;
 
-	public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository, ObjectMapper objectMapper) {
+	private final TokenBlacklist tokenBlacklist;
+
+	public JwtAuthenticationFilter(
+			JwtService jwtService,
+			UserRepository userRepository,
+			ObjectMapper objectMapper,
+			TokenBlacklist tokenBlacklist) {
 		this.jwtService = jwtService;
 		this.userRepository = userRepository;
 		this.objectMapper = objectMapper;
+		this.tokenBlacklist = tokenBlacklist;
 	}
 
 	@Override
@@ -52,7 +59,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 		try {
-			JwtService.JwtClaims claims = jwtService.verify(header.substring(7));
+			String rawToken = header.substring(7);
+			if (tokenBlacklist.contains(rawToken)) {
+				throw new IllegalArgumentException("令牌已失效");
+			}
+			JwtService.JwtClaims claims = jwtService.verify(rawToken);
 			User user = userRepository.findById(claims.userId())
 					.orElseThrow(() -> new IllegalArgumentException("用户不存在"));
 			if (user.getStatus() != UserStatus.ACTIVE) {
