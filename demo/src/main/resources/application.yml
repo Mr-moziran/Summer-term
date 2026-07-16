@@ -4,6 +4,10 @@ spring:
       mode: never
       schema-locations: classpath:db/schema.sql
       data-locations: classpath:db/seed.sql
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
   datasource:
     url: jdbc:postgresql://localhost:5432/ticket_system
     username: postgres

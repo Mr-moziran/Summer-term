@@ -29,6 +29,7 @@ public class PgVectorKnowledgeSearch implements KnowledgeSearch {
 				.query(question)
 				.topK(topK)
 				.similarityThreshold(similarityThreshold)
+				.filterExpression("type == 'knowledge'")
 				.build();
 		return vectorStore.similaritySearch(request).stream()
 				.map(this::toKnowledgeDocument)
@@ -40,7 +41,7 @@ public class PgVectorKnowledgeSearch implements KnowledgeSearch {
 		return new KnowledgeDocument(
 				toLong(metadata.get("ticketId")),
 				toString(metadata.get("title"), "知识库资料"),
-				toString(metadata.get("solution"), document.getText()),
+				toString(metadata.get("content"), document.getText()),
 				document.getScore() == null ? 0.0 : document.getScore());
 	}
 

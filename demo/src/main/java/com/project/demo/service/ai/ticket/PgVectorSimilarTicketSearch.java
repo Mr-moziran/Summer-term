@@ -33,6 +33,7 @@ public class PgVectorSimilarTicketSearch implements SimilarTicketSearch {
 				.query(ticket.getTitle() + "\n" + ticket.getDescription())
 				.topK(TOP_K)
 				.similarityThreshold(SIMILARITY_THRESHOLD)
+				.filterExpression("type == 'resolved_ticket'")
 				.build();
 		return vectorStore.similaritySearch(request).stream()
 				.map(this::toContext)
