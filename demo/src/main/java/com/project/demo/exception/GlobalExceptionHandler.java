@@ -70,4 +70,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.badRequest()
 				.body(new ApiErrorResponse(400, "请求参数类型不正确: " + exception.getName(), null));
 	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<ApiErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
+		return ResponseEntity.badRequest()
+				.body(new ApiErrorResponse(400, exception.getMessage(), null));
+	}
 }

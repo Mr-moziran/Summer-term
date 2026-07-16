@@ -2,7 +2,10 @@
   <div class="page-container">
     <el-card class="content-card">
       <template #header>
-        <h2>工单管理</h2>
+        <div class="card-header">
+          <h2>工单管理</h2>
+          <el-button @click="goDashboard">返回后台</el-button>
+        </div>
       </template>
 
       <!-- 筛选区 -->
@@ -259,9 +262,24 @@ async function handleAssign() {
 function viewDetail(id) {
   router.push(`/tickets/${id}`)
 }
+
+function goDashboard() {
+  router.push('/admin/dashboard')
+}
 </script>
 
 <style scoped lang="scss">
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  h2 {
+    margin: 0;
+  }
+}
+
 .filter-form {
   margin-bottom: 20px;
 }

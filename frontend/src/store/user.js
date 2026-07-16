@@ -12,6 +12,7 @@ export const useUserStore = defineStore('user', () => {
   const userId = computed(() => userInfo.value?.userId)
   const username = computed(() => userInfo.value?.username)
   const role = computed(() => userInfo.value?.role)
+  const homePath = computed(() => userInfo.value?.homePath)
   const isUser = computed(() => role.value === 'USER')
   const isAgent = computed(() => role.value === 'AGENT')
   const isAdmin = computed(() => role.value === 'ADMIN')
@@ -22,13 +23,15 @@ export const useUserStore = defineStore('user', () => {
     userInfo.value = {
       userId: data.userId,
       username: data.username,
-      role: data.role
+      role: data.role,
+      homePath: data.homePath
     }
     localStorage.setItem('token', data.token)
     localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
 
-    // 根据角色跳转
-    if (data.role === 'USER') {
+    if (data.homePath) {
+      router.push(data.homePath)
+    } else if (data.role === 'USER') {
       router.push('/my-tickets')
     } else if (data.role === 'AGENT') {
       router.push('/agent/tickets')
@@ -61,6 +64,7 @@ export const useUserStore = defineStore('user', () => {
     userId,
     username,
     role,
+    homePath,
     isUser,
     isAgent,
     isAdmin,

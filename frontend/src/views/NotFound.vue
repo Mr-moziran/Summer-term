@@ -20,7 +20,9 @@ const router = useRouter()
 const userStore = useUserStore()
 
 function goHome() {
-  if (userStore.isUser) {
+  if (userStore.homePath) {
+    router.push(userStore.homePath)
+  } else if (userStore.isUser) {
     router.push('/my-tickets')
   } else if (userStore.isAgent) {
     router.push('/agent/tickets')

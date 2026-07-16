@@ -61,7 +61,19 @@ const routes = [
     path: '/admin/dashboard',
     name: 'AdminDashboard',
     component: () => import('@/views/admin/Dashboard.vue'),
-    meta: { title: '数据大盘', role: 'ADMIN' }
+    meta: { title: '管理员后台', role: 'ADMIN' }
+  },
+  {
+    path: '/admin/agents',
+    name: 'AdminAgents',
+    component: () => import('@/views/admin/AgentPerformance.vue'),
+    meta: { title: '客服绩效', role: 'ADMIN' }
+  },
+  {
+    path: '/admin/knowledge',
+    name: 'AdminKnowledge',
+    component: () => import('@/views/admin/KnowledgeManage.vue'),
+    meta: { title: '知识库管理', role: 'ADMIN' }
   },
   {
     path: '/admin/tickets',
@@ -100,7 +112,9 @@ router.beforeEach((to, from, next) => {
   if (to.meta.public) {
     // 如果已登录用户访问登录页，重定向到对应首页
     if (userStore.isLoggedIn && (to.path === '/login' || to.path === '/register')) {
-      if (userStore.isUser) {
+      if (userStore.homePath) {
+        next(userStore.homePath)
+      } else if (userStore.isUser) {
         next('/my-tickets')
       } else if (userStore.isAgent) {
         next('/agent/tickets')

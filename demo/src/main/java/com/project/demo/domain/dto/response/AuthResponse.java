@@ -12,12 +12,14 @@ public class AuthResponse {
 	private final UserRole role;
 	private final Long userId;
 	private final String username;
+	private final String homePath;
 
 	private AuthResponse(String token, User user) {
 		this.token = token;
 		this.role = user.getRole();
 		this.userId = user.getId();
 		this.username = user.getUsername();
+		this.homePath = homePath(user.getRole());
 	}
 
 	public static AuthResponse from(String token, User user) {
@@ -38,5 +40,17 @@ public class AuthResponse {
 
 	public String getUsername() {
 		return username;
+	}
+
+	public String getHomePath() {
+		return homePath;
+	}
+
+	private String homePath(UserRole role) {
+		return switch (role) {
+			case ADMIN -> "/admin/dashboard";
+			case AGENT -> "/agent/tickets";
+			case USER -> "/tickets";
+		};
 	}
 }
